@@ -1,0 +1,7 @@
+Pathway,Top1_Count,Top1_Pct,Background_Rate,Fold_Enrichment,Fisher_P_Value,Enriched_Genes
+Post-Synaptic Density & Scaffolding,4,3.6%,0.2%,21.61,1.229e-05,"EPB41, FYN, MAD1L1, SHANK3"
+Neurodevelopment & Axon Guidance,3,2.7%,0.1%,32.41,2.861e-05,"AMBRA1, NEAT1, SORCS3"
+EGF / Neurotrophin Receptor Signaling,3,2.7%,0.1%,32.41,2.861e-05,"HBEGF, RGL3, STK40"
+Synaptic Vesicle Cycling & Release,2,1.8%,0.1%,32.41,0.0009437,"RGS6, RIMS2"
+Glutamatergic & GABAergic Synapse Organization,2,1.8%,0.1%,32.41,0.0009437,"GRIA1, IGSF9B"
+Voltage-Gated Ion Channels & Calcium Signaling,1,0.9%,0.1%,10.8,0.0898,CACNA2D2
