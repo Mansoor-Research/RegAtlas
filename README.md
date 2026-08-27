@@ -175,23 +175,6 @@ python scripts/09_compile_supplementary_tables.py
 - **69.4% Distal Overrides:** Overrode the proximal nearest-TSS gene in 77 of 111 loci in favor of distal genes supported by convergent 3D enhancer loops and brain eQTLs (e.g., *MAD1L1*, *MC1R*, *EPB41*, *NEAT1*, *RGS6*, *RIMS2*, *SORCS3*).
 - **Synaptic Pathway Convergence:** Highly significant enrichment for Voltage-Gated Ion Channels/Calcium Signaling ($P < 0.001$), Post-Synaptic Density Scaffolding ($P < 0.005$), and Synaptic Vesicle Cycling ($P < 0.01$).
 
----
-
-## Citation
-
-If you use RegAtlas or its prioritized gene rankings in your research, please cite:
-
-```bibtex
-@article{regatlas2026,
-  title={RegAtlas: A Learning-to-Rank Multi-Omics Framework for Post-GWAS Locus-to-Gene Mapping in Psychiatric Disorders},
-  author={Mansoor, S. M. J. and Wang, D. Q. and colleagues},
-  journal={bioRxiv / Journal Preprint},
-  year={2026},
-  doi={10.5281/zenodo.xxxxxx}
-}
-```
-
----
 
 ## License
 
