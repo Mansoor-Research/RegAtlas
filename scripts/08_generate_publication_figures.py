@@ -63,7 +63,7 @@ mpl.rcParams.update({
     "font.size":           9,
 })
 
-PROJECT = Path(__file__).resolve().parent.parent
+PROJECT = Path(__file__).resolve().parents[1]
 DATA    = PROJECT / "data" / "processed"
 FIG_DIR = PROJECT / "results" / "figures"
 FIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -423,10 +423,13 @@ def figure_4():
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# FIGURE 5: Downstream Validation & PGC3 Concordance
-# ═══════════════════════════════════════════════════════════════════════════════
+# Replacement for figure_5() in 08_generate_publication_figures.py
+"""
+FIGURE 5: Downstream Biological Validation (Official PGC3 Concordance & Real GO Enrichment)
+"""
+
 def figure_5():
-    log.info("Generating Figure 5...")
+    log.info("Generating Figure 5 (Official PGC3 Concordance & GO Enrichment)...")
     df_scz   = pd.read_parquet(DATA / "scz_prioritized_gene_rankings.parquet")
     df_train = pd.read_parquet(DATA / "training_matrix_dataset_a.parquet")
     top1     = df_scz[df_scz["regatlas_rank"] == 1].copy()
@@ -435,46 +438,64 @@ def figure_5():
     gs  = gridspec.GridSpec(2, 3, wspace=0.38, hspace=0.40,
                             left=0.06, right=0.97, top=0.95, bottom=0.07)
 
-    # a — PGC3 concordance ring
+    # a — PGC3 concordance comparison (RegAtlas vs. Nearest-TSS)
     ax = fig.add_subplot(gs[0, 0]); _label(ax, "a")
-    wedges, _ = ax.pie([17, 2], labels=None, startangle=90,
-                       colors=[C_BLUE, C_GREY],
-                       wedgeprops=dict(width=0.38, edgecolor="white", linewidth=2))
-    ax.text(0, 0.05, "89.5%", ha="center", va="center", fontsize=17,
-            fontweight="bold", color=C_BLUE)
-    ax.text(0, -0.18, "concordance", ha="center", va="center", fontsize=8.5, color=C_DARK)
-    ax.legend(wedges, ["Replicated (17/19)", "Not replicated (2/19)"],
-              loc="lower center", frameon=False, fontsize=8, ncol=2,
-              bbox_to_anchor=(0.5, -0.08))
-
-    # b — Pathway enrichment (lollipop)
-    ax = fig.add_subplot(gs[0, 1]); _label(ax, "b")
-    pathways = ["Glutamatergic / GABAergic", "Vesicle cycling & release",
-                "EGF / neurotrophin", "Neurodevelopment & axon",
-                "Post-synaptic density"]
-    folds   = [32.41, 32.41, 32.41, 32.41, 21.61]
-    p_vals  = ["9.4e-4", "9.4e-4", "2.9e-5", "2.9e-5", "1.2e-5"]
-    y = np.arange(len(pathways))
-    ax.hlines(y, 0, folds, color=C_GREY_LIGHT, linewidth=2.5)
-    ax.scatter(folds, y, color=C_BLUE, s=75, zorder=5, edgecolors="none")
-    ax.set_yticks(y); ax.set_yticklabels(pathways, fontsize=8.5)
-    ax.set_xlabel("Fold enrichment (Fisher's exact)", fontsize=9.5)
-    ax.set_xlim(0, 42)
-    for yi, (fold, pv) in enumerate(zip(folds, p_vals)):
-        ax.text(fold + 1.0, yi, f"P = {pv}", fontsize=7.5, va="center", color=C_DARK)
+    methods = ["Nearest TSS\n(4/37 loci)", "RegAtlas\n(7/37 loci)"]
+    pcts = [10.81, 18.92]
+    colors = [C_GREY, C_BLUE]
+    x = np.arange(len(methods))
+    bars = ax.bar(x, pcts, color=colors, width=0.45, edgecolor="none", zorder=3)
+    ax.set_ylabel("PGC3 locus concordance (%)", fontsize=9.5)
+    ax.set_xticks(x)
+    ax.set_xticklabels(methods, fontsize=8.5)
+    ax.set_ylim(0, 26)
+    
+    # Annotate bars
+    ax.text(0, 10.81 + 0.8, "10.8%\nP = 0.061", ha="center", fontsize=8, color=C_DARK)
+    ax.text(1, 18.92 + 0.8, "18.9%\nP = 6.1e-4", ha="center", fontsize=8, fontweight="bold", color=C_BLUE)
     _apply_axes_style(ax)
 
-    # c — PGC3 gene evidence DOT/PRESENCE MATRIX (Clean, elegant, no strange grey rectangles)
-    ax = fig.add_subplot(gs[0, 2]); _label(ax, "c")
-    pgc3 = ["CACNA2D2", "FYN", "MAD1L1", "HBEGF", "RIMS2", "SORCS3",
-            "AMBRA1", "NEAT1", "IGSF9B", "EPB41", "RGS6", "STK40",
-            "RGL3", "CHST11", "DPYD", "MC1R", "TPI1"]
+    # b — Real GO enrichment from g:Profiler (lollipop)
+    ax = fig.add_subplot(gs[0, 1]); _label(ax, "b")
+    go_terms = [
+        "Phosphoric diester hydrolase",
+        "Cell-cell signaling",
+        "Trans-synaptic signaling",
+        "Chemical synaptic trans.",
+        "Mod. of chemical synaptic trans.",
+        "GABAergic synaptic trans."
+    ]
+    # -log10(FDR)
+    # FDRs: 0.00245, 0.0116, 0.0116, 0.0116, 0.0116, 0.0372
+    fdrs = [0.00245, 0.01157, 0.01157, 0.01157, 0.01157, 0.03724]
+    counts = ["6/97", "17/97", "13/97", "13/97", "11/97", "3/97"]
+    neg_log_fdr = [-np.log10(f) for f in fdrs]
     
-    # Plot as a clean dot grid
-    for y_idx, gene in enumerate(pgc3):
+    y = np.arange(len(go_terms))
+    ax.hlines(y, 0, neg_log_fdr, color=C_GREY_LIGHT, linewidth=2.5)
+    ax.scatter(neg_log_fdr, y, color=C_BLUE, s=75, zorder=5, edgecolors="none")
+    ax.axvline(-np.log10(0.05), color=C_RED, linestyle="--", linewidth=1, alpha=0.7)
+    ax.text(-np.log10(0.05) + 0.05, 0.2, "FDR = 0.05", fontsize=7.5, color=C_RED)
+    
+    ax.set_yticks(y); ax.set_yticklabels(go_terms, fontsize=8.0)
+    ax.set_xlabel("-log10(FDR)", fontsize=9.5)
+    ax.set_xlim(0, 3.2)
+    for yi, (nl, cnt, fdr_val) in enumerate(zip(neg_log_fdr, counts, fdrs)):
+        ax.text(nl + 0.08, yi, f"{cnt} (q={fdr_val:.2e})", fontsize=7.2, va="center", color=C_DARK)
+    _apply_axes_style(ax)
+
+    # c — Official PGC3 replicated gene evidence matrix
+    ax = fig.add_subplot(gs[0, 2]); _label(ax, "c")
+    replicated_pgc3 = ["CUL9", "DPYD", "ENSG00000262319", "IMMP2L", "KLF6", "MAD1L1", "TMTC1"]
+    
+    for y_idx, gene in enumerate(replicated_pgc3):
         row = top1[top1["gene_name"] == gene]
+        if len(row) == 0:
+            row = top1[top1["gene_id"].str.startswith(gene)]
+        
         eqtl_val = int(row.iloc[0].has_any_brain_eqtl) if len(row) > 0 else 0
         re2g_val = int(row.iloc[0].has_re2g_link) if len(row) > 0 else 0
+        override_val = 1 if (len(row) > 0 and row.iloc[0].tss_distance_rank > 1) else 0
         
         # Brain eQTL dot (x = 0)
         if eqtl_val == 1:
@@ -488,24 +509,30 @@ def figure_5():
         else:
             ax.scatter(1, y_idx, s=50, facecolor="none", edgecolor=C_GREY_LIGHT, linewidth=1.2, zorder=4)
 
-    ax.set_xlim(-0.5, 1.5)
-    ax.set_ylim(-0.8, len(pgc3) - 0.2)
-    ax.set_xticks([0, 1])
-    ax.set_xticklabels(["Brain\neQTL", "rE2G\nenhancer"], fontsize=8.5)
-    ax.set_yticks(range(len(pgc3)))
-    ax.set_yticklabels(pgc3, fontsize=7.5)
-    ax.invert_yaxis()  # Gene list top to bottom
+        # Distal Override dot (x = 2)
+        if override_val == 1:
+            ax.scatter(2, y_idx, s=60, color=C_BLUE, marker="s", edgecolors="none", zorder=4)
+        else:
+            ax.scatter(2, y_idx, s=50, facecolor="none", edgecolor=C_GREY_LIGHT, marker="s", linewidth=1.2, zorder=4)
+
+    ax.set_xlim(-0.6, 2.6)
+    ax.set_ylim(-0.8, 8.8)
+    ax.set_xticks([0, 1, 2])
+    ax.set_xticklabels(["Brain\neQTL", "rE2G\nenhancer", "Distal\noverride"], fontsize=8.0)
+    ax.set_yticks(range(len(replicated_pgc3)))
+    ax.set_yticklabels(replicated_pgc3, fontsize=8.0)
+    ax.invert_yaxis()
     
-    # Legend
     from matplotlib.lines import Line2D
     legend_elements = [
-        Line2D([0], [0], marker='o', color='w', label='Present', markerfacecolor=C_BLUE, markersize=7),
-        Line2D([0], [0], marker='o', color='w', label='Absent', markeredgecolor=C_GREY_LIGHT, markerfacecolor='none', markeredgewidth=1.2, markersize=6.5)
+        Line2D([0], [0], marker='o', color='w', label='Evidence Present', markerfacecolor=C_BLUE, markersize=7),
+        Line2D([0], [0], marker='o', color='w', label='Absent', markeredgecolor=C_GREY_LIGHT, markerfacecolor='none', markeredgewidth=1.2, markersize=6.5),
+        Line2D([0], [0], marker='s', color='w', label='Distal Override', markerfacecolor=C_BLUE, markersize=7)
     ]
-    ax.legend(handles=legend_elements, loc="lower right", frameon=False, fontsize=7.5)
+    ax.legend(handles=legend_elements, loc="lower right", frameon=False, fontsize=7.0)
     _apply_axes_style(ax)
 
-    # d — Annotation density contrast
+    # d — Annotation density contrast (from training set)
     ax = fig.add_subplot(gs[1, 0]); _label(ax, "d")
     feats = ["Brain eQTL", "rE2G enhancer", "Both layers"]
     gold = df_train[df_train["label"] == 1]
@@ -538,22 +565,40 @@ def figure_5():
     ax.legend(frameon=False, fontsize=8.5, loc="upper right")
     _apply_axes_style(ax)
 
-    # f — Odds ratio forest (clean solid blue and solid grey bars)
+    # f — PGC3 Concordance Odds Ratio Forest Plot (Dedicated, no mixed axes)
     ax = fig.add_subplot(gs[1, 2]); _label(ax, "f")
-    tests = ["PGC3 concordance\n(89.5%)", "Post-synaptic\ndensity",
-             "Neurodevelopment", "EGF / neurotrophin",
-             "Vesicle cycling"]
-    ors   = [314.59, 21.61, 32.41, 32.41, 32.41]
-    log_ors = [np.log10(o) for o in ors]
-    cs_f = [C_BLUE, C_GREY, C_GREY, C_GREY, C_GREY]
-    y = np.arange(len(tests))
-    bars = ax.barh(y, log_ors, color=cs_f, height=0.48, edgecolor="none")
-    ax.set_yticks(y); ax.set_yticklabels(tests, fontsize=8.5)
-    ax.set_xlabel("log10(odds ratio)", fontsize=9.5)
-    for yi, (lo, o) in enumerate(zip(log_ors, ors)):
-        ax.text(lo + 0.05, yi, f"OR = {o:.1f}×", fontsize=7.5, va="center", color=C_DARK)
+    methods = [
+        "Nearest TSS\n(4/37 loci)",
+        "RegAtlas Top-1\n(7/37 loci)"
+    ]
+    ors = [2.89, 5.57]
+    ci_low = [0.74, 2.06]
+    ci_high = [8.13, 12.91]
+    p_vals = ["P = 0.061 (n.s.)", "P = 6.1e-4"]
+    colors = [C_GREY, C_BLUE]
+    
+    y = np.arange(len(methods))
+    
+    # Plot reference line at OR = 1.0
+    ax.axvline(1.0, color=C_DARK, linewidth=1, linestyle="--", alpha=0.7)
+    ax.text(1.02, -0.35, "Null (OR=1.0)", fontsize=7.5, color=C_DARK, alpha=0.8)
+    
+    for yi, (o, lo, hi, col, p_str) in enumerate(zip(ors, ci_low, ci_high, colors, p_vals)):
+        ax.plot([lo, hi], [yi, yi], color=col, linewidth=2.2, zorder=3)
+        ax.plot([lo, lo], [yi - 0.08, yi + 0.08], color=col, linewidth=2, zorder=3)
+        ax.plot([hi, hi], [yi - 0.08, yi + 0.08], color=col, linewidth=2, zorder=3)
+        ax.scatter(o, yi, s=85, color=col, zorder=4, edgecolors="none")
+        ax.text(hi + 0.45, yi, f"OR = {o:.2f} [{lo:.2f}–{hi:.2f}]\n{p_str}",
+                va="center", fontsize=7.8, color=C_DARK, fontweight="bold" if yi == 1 else "normal")
+
+    ax.set_yticks(y)
+    ax.set_yticklabels(methods, fontsize=8.5)
+    ax.set_xlabel("Gene-level enrichment odds ratio (Fisher exact 95% CI)", fontsize=9.5)
+    ax.set_xlim(0, 17)
+    ax.set_ylim(-0.6, 1.6)
     _apply_axes_style(ax)
 
+    FIG_DIR.mkdir(parents=True, exist_ok=True)
     fig.savefig(FIG_DIR / "Figure5.png", dpi=300, facecolor="white")
     fig.savefig(FIG_DIR / "Figure5.pdf", facecolor="white")
     plt.close(fig)

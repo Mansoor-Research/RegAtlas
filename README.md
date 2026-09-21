@@ -17,7 +17,7 @@
 | **3D Epigenomics** | Linear proximity or bulk Hi-C topological domains | **ENCODE-rE2G (2024)** high-resolution brain predicted enhancer-to-promoter links |
 | **Validation Rigor** | Random sample-level splits (prone to LD leakage) | **Chromosome-held-out cross-validation** ($K=5$) and $200\times$ within-locus permutation null |
 | **Distal Discovery** | Often restricted to nearest-TSS gene | **69.4% non-nearest distal overrides** prioritized in schizophrenia GWAS |
-| **Consensus Concordance** | Low or unbenchmarked against expert truth sets | **89.5% replication (17/19)** of fine-mapped PGC3 landmark SCZ risk genes ($P = 9.78 \times 10^{-25}$) |
+| **Consensus Concordance** | Low or unbenchmarked against expert truth sets | **Significant enrichment against official PGC3 fine-mapped genes** (7/37 loci, OR = 5.57, $P = 6.13 \times 10^{-4}$ vs. nearest-TSS 4/37 loci, OR = 2.89, $P = 0.061$) |
 
 ---
 
@@ -34,8 +34,8 @@
                                                                                      ▼
  ┌───────────────────────────┐      ┌───────────────────────────┐      ┌───────────────────────────┐
  │   Biological Validation   │      │   Distal Overrides (69%)  │      │   Schizophrenia GWAS      │
- │  • PGC3 Replication (90%) │ ◄─── │  • Non-nearest rescue     │ ◄─── │  • 111 PGC3 Loci (Frozen) │
- │  • Synaptic Enrichments   │      │  • High-margin rankings   │      │  • 3,635 Candidate Pairs  │
+ │  • PGC3 Replication (OR 5.6x)│ ◄─── │  • Non-nearest rescue     │ ◄─── │  • 111 PGC3 Loci (Frozen) │
+ │  • Synaptic GO Enrichment │      │  • High-margin rankings   │      │  • 3,635 Candidate Pairs  │
  └───────────────────────────┘      └───────────────────────────┘      └───────────────────────────┘
 ```
 
@@ -51,7 +51,7 @@ RegAtlas/
 │   └── processed/            # Final model-ready parquet matrices (~12 MB total)
 │       ├── training_matrix_dataset_a.parquet       # 1,075 training loci
 │       ├── scz_application_matrix_dataset_b.parquet# 111 SCZ application loci
-│       └── scz_prioritized_gene_rankings.csv       # RegAtlas output rankings
+│       └── scz_prioritized_gene_rankings.parquet   # RegAtlas output rankings
 ├── scripts/
 │   ├── 00_audit_current_input.py                   # Data integrity and leak-prevention audit
 │   ├── 01_inspect_gold_standards.py                # Inspect Open Targets L2G universe
@@ -60,16 +60,17 @@ RegAtlas/
 │   ├── 04_train_and_evaluate_ranker.py             # LambdaRank training, CV, and ablations
 │   ├── 05_build_scz_application_matrix.py          # Construct 111 PGC3 SCZ locus matrix
 │   ├── 06_apply_frozen_regatlas_to_scz.py          # Apply frozen model to schizophrenia
-│   ├── 07_pathway_and_concordance_analysis.py      # PGC3 replication & SynGO enrichments
-│   ├── 08_generate_publication_figures.py          # Generate Figures 2-5 (PDF/PNG 300 DPI)
-│   ├── 09_compile_supplementary_tables.py          # Compile Supplementary Tables S1-S3 (Excel)
+│   ├── 07_pathway_and_concordance_analysis.py      # PGC3 concordance & g:Profiler GO enrichment
+│   ├── 08_generate_publication_figures.py          # Generate Figures 1-5 (PDF/PNG 300 DPI)
+│   ├── 09_compile_supplementary_tables.py          # Compile Supplementary Tables S1-S3 & Data S1-S2
 │   ├── 10_generate_manuscript_draft.py             # Compile reproducible manuscript draft
 │   └── 11_generate_supplementary_figures.py        # Generate Supplementary Figures S1-S4
 ├── results/
-│   ├── figures/              # Main publication figures (Figures 2-5)
+│   ├── downstream_biology/   # PGC3 concordance and g:Profiler GO enrichment outputs
+│   ├── figures/              # Main publication figures (Figures 1-5)
 │   ├── figures/supplementary/# Supplementary figures (Figures S1-S4)
 │   ├── models/               # Frozen LightGBM booster model and feature importances
-│   └── tables/               # Supplementary Tables S1-S3
+│   └── tables/               # Supplementary Tables (S1-S3) & Data (S1-S2)
 ├── environment.yml           # Conda environment definition
 ├── requirements.txt          # Python package requirements
 ├── LICENSE                   # MIT License
@@ -171,9 +172,9 @@ python scripts/09_compile_supplementary_tables.py
 | **RegAtlas (Full)** | **Distance + Brain eQTL + rE2G** | **35.16%** | **65.02%** | **0.491** | **0.509** | **$P < 0.005$ (>47 SD vs Null)** |
 
 ### Schizophrenia Validation Highlights (Dataset B, 111 Loci)
-- **89.5% PGC3 Concordance:** Successfully replicated 17 of 19 testable fine-mapped landmark schizophrenia risk genes ($OR = 314.6$, Fisher's exact $P = 9.78 \times 10^{-25}$).
-- **69.4% Distal Overrides:** Overrode the proximal nearest-TSS gene in 77 of 111 loci in favor of distal genes supported by convergent 3D enhancer loops and brain eQTLs (e.g., *MAD1L1*, *MC1R*, *EPB41*, *NEAT1*, *RGS6*, *RIMS2*, *SORCS3*).
-- **Synaptic Pathway Convergence:** Highly significant enrichment for Voltage-Gated Ion Channels/Calcium Signaling ($P < 0.001$), Post-Synaptic Density Scaffolding ($P < 0.005$), and Synaptic Vesicle Cycling ($P < 0.01$).
+- **PGC3 Landmark Concordance:** Prioritized official fine-mapped schizophrenia risk genes from PGC3 (Trubetskoy et al., Nature 2022) at 7 of 37 testable loci (18.9%, Fisher's exact $P = 6.13 \times 10^{-4}$, OR = 5.57 [exact 95% CI: 2.06–12.91]), compared to 4 of 37 loci for the nearest-TSS heuristic (10.8%, Fisher's exact $P = 0.061$, OR = 2.89 [exact 95% CI: 0.74–8.13]). RegAtlas's enrichment is statistically significant whereas nearest-TSS is not (McNemar paired-test $P = 0.45$). Replicated genes include *CUL9*, *DPYD*, *IMMP2L*, *KLF6*, *MAD1L1*, and *TMTC1*.
+- **69.4% Distal Overrides:** Overrode the proximal nearest-TSS gene in 77 of 111 loci in favor of distal genes supported by convergent 3D enhancer loops and brain eQTLs (including 5 of the 7 PGC3-replicated genes: *KLF6*, *TMTC1*, *DPYD*, *IMMP2L*, and *MAD1L1*).
+- **Functional Pathway Convergence:** Significant Gene Ontology enrichment across 12 functional terms evaluated against a protein-coding candidate background via g:Profiler (FDR < 0.05), highlighting chemical synaptic transmission (FDR = 0.012, fold enrichment = 3.52×), trans-synaptic signaling (FDR = 0.012, fold enrichment = 3.52×), GABAergic synaptic transmission (FDR = 0.037, fold enrichment = 17.61×), and phosphoric diester hydrolase activity (FDR = 0.0025, fold enrichment = 10.56×).
 
 
 ## License
