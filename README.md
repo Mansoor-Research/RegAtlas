@@ -1,183 +1,105 @@
-# RegAtlas: A Learning-to-Rank Multi-Omics Framework for Post-GWAS Locus-to-Gene Mapping in Psychiatric Disorders
+# RegAtlas
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![LightGBM LambdaRank](https://img.shields.io/badge/Model-LightGBM%20LambdaRank-brightgreen.svg)](https://lightgbm.readthedocs.io/)
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.xxxxxx-blue.svg)](https://zenodo.org/)
+**RegAtlas** is a learning-to-rank framework for post-GWAS locus-to-gene prioritization. For each GWAS locus it ranks all candidate genes within ±500 kb of the lead variant, using genomic distance, GTEx v10 brain cis-eQTLs and ENCODE-rE2G predicted enhancer–gene links in a LightGBM LambdaRank model.
 
-**RegAtlas** is a machine learning framework that reformulates post-GWAS **Locus-to-Gene (L2G)** mapping as a **Learning-to-Rank (LTR)** query problem. By integrating **spatial genomic distance**, **GTEx v10 brain cortex cis-eQTLs**, and **ENCODE-rE2G predicted enhancer-to-gene regulatory links (Gschwind et al. 2023)**, RegAtlas learns intra-locus relative separation among competing candidate genes, effectively overcoming proximity bias and linkage disequilibrium (LD) confounding.
+This repository contains the code and processed data needed to reproduce the analyses in:
 
----
+> Jan SM, *et al.* RegAtlas: A Learning-to-Rank Multi-Omics Framework for Post-GWAS Locus-to-Gene Mapping in Psychiatric Disorders. *Manuscript under review.*
 
-## Key Innovations
+## Overview
 
-| Feature | Prior Post-GWAS Approaches | RegAtlas Framework |
-| :--- | :--- | :--- |
-| **Formulation** | Pointwise binary classification or heuristic distance/eQTL thresholds | **Pairwise LambdaRank (NDCG@5)** optimizing within-locus relative gene ranking |
-| **Functional Epigenomics** | Linear proximity or bulk Hi-C topological domains | **ENCODE-rE2G (Gschwind et al. 2023)** high-resolution brain predicted enhancer-to-promoter regulatory links |
-| **Validation Rigor** | Random sample-level splits (prone to LD leakage) | **Chromosome-held-out cross-validation** ($K=5$) and $200\times$ within-locus permutation null |
-| **Distal Discovery** | Often restricted to nearest-TSS gene | **65.8% non-nearest distal overrides** prioritized in schizophrenia GWAS |
-| **Consensus Concordance** | Low or unbenchmarked against expert truth sets | **Significant enrichment against official PGC3 fine-mapped genes** (10/37 loci, OR = 8.84, $P = 1.43 \times 10^{-6}$ vs. nearest-TSS 4/37 loci, OR = 2.89, $P = 0.061$) |
+| Stage | Data | Description |
+|---|---|---|
+| Training (Dataset A) | 1,075 Open Targets gold-standard loci; 35,358 candidate genes | One gold-standard gene per locus; all other genes in the window are competitors |
+| Features | 22 per locus–gene pair | Distance (5), GTEx v10 Brain Cortex and Frontal Cortex BA9 cis-eQTLs (10), ENCODE-rE2G DLPFC and whole-brain links (6), eQTL × rE2G indicator (1) |
+| Model | LightGBM LambdaRank | Genes grouped by locus; NDCG objective |
+| Evaluation | Chromosome-held-out 5-fold CV | Early stopping on an inner validation split of the training loci; 200 within-locus label permutations; 7-way feature-group ablation |
+| Application (Dataset B) | 111 PGC3 schizophrenia loci; 3,635 candidate genes | Frozen model applied without retraining |
 
----
+## Key results
 
-## Pipeline Overview
+Cross-validation on Dataset A (1,075 loci):
 
-```
- ┌───────────────────────────┐      ┌───────────────────────────┐      ┌───────────────────────────┐
- │   Gold-Standard Loci      │      │    Tri-Modal Features     │      │   LightGBM LambdaRank     │
- │  1,075 Open Targets Loci  │ ───► │  • Spatial Distance (5)   │ ───► │  • Objective: LambdaRank  │
- │  35,358 Candidate Pairs   │      │  • GTEx v10 Brain eQTL(10)│      │  • GroupKFold by Chrom    │
- └───────────────────────────┘      │  • ENCODE-rE2G Links (6)  │      │  • Chromosome-Held-Out    │
-                                    │  • Synergy Feature (1)    │      └─────────────┬─────────────┘
-                                    └───────────────────────────┘                    │
-                                                                                     ▼
- ┌───────────────────────────┐      ┌───────────────────────────┐      ┌───────────────────────────┐
- │   Biological Validation   │      │   Distal Overrides (66%)  │      │   Schizophrenia GWAS      │
- │  • PGC3 Replication (OR 8.8x)│ ◄─── │  • Non-nearest rescue     │ ◄─── │  • 111 PGC3 Loci (Frozen) │
- │  • Synaptic Targets       │      │  • High-margin rankings   │      │  • 3,635 Candidate Pairs  │
- └───────────────────────────┘      └───────────────────────────┘      └───────────────────────────┘
-```
+| Model | Top-1 | Recall@5 | MRR |
+|---|---|---|---|
+| Nearest TSS | 17.3% | 49.7% | 0.332 |
+| Distance features only | 30.5% | 55.8% | 0.431 |
+| Distance + ENCODE-rE2G | 33.7% | 65.3% | 0.484 |
+| **RegAtlas (all 22 features)** | **32.4%** | **64.1%** | **0.470** |
+| Within-locus permutation null | 4.6% | – | 0.158 |
 
----
+- Enhancer–gene links improve ranking beyond distance and remain informative within distance-matched strata. Brain cis-eQTL features did not improve cross-validated performance (see the manuscript for discussion).
+- Schizophrenia: the top-ranked gene was an official PGC3 prioritized gene ([Trubetskoy *et al.* 2022](https://doi.org/10.1038/s41586-022-04434-5), Supplementary Table 12) at 10 of 37 testable loci (gene-level OR = 8.84, P = 1.4 × 10⁻⁶), compared with 4 of 37 for the nearest-TSS heuristic (P = 0.061).
+- Gene Ontology analysis of the prioritized genes showed no enrichment at FDR < 0.05.
 
-## Directory Structure
+## Repository structure
 
 ```
 RegAtlas/
+├── scripts/            Analysis pipeline, numbered in run order
 ├── data/
-│   ├── raw/                  # Downloaded raw public data (GTEx, Open Targets, ENCODE, PGC3)
-│   ├── interim/              # Intermediate extracted features and coordinate overlaps
-│   └── processed/            # Final model-ready parquet matrices (~12 MB total)
-│       ├── training_matrix_dataset_a.parquet       # 1,075 training loci
-│       ├── scz_application_matrix_dataset_b.parquet# 111 SCZ application loci
-│       └── scz_prioritized_gene_rankings.parquet   # RegAtlas output rankings
-├── scripts/
-│   ├── 00_audit_current_input.py                   # Data integrity and leak-prevention audit
-│   ├── 01_inspect_gold_standards.py                # Inspect Open Targets L2G universe
-│   ├── 02_build_gold_standard_universe.py          # Construct +/- 500kb candidate gene space
-│   ├── 03_extract_features_and_audit_coverage.py   # Extract 22 multi-omics features
-│   ├── 04_train_and_evaluate_ranker.py             # LambdaRank training, CV, and ablations
-│   ├── 05_build_scz_application_matrix.py          # Construct 111 PGC3 SCZ locus matrix
-│   ├── 06_apply_frozen_regatlas_to_scz.py          # Apply frozen model to schizophrenia
-│   ├── 07_pathway_and_concordance_analysis.py      # PGC3 concordance & g:Profiler GO enrichment
-│   ├── 08_generate_publication_figures.py          # Generate Figures 1-5 (PDF/PNG 300 DPI)
-│   ├── 09_compile_supplementary_tables.py          # Compile Supplementary Tables S1-S3 & Data S1-S2
-│   ├── 10_generate_manuscript_draft.py             # Compile reproducible manuscript draft
-│   └── 11_generate_supplementary_figures.py        # Generate Supplementary Figures S1-S4
+│   ├── raw/            Public source files (not tracked; see data/raw/README.md)
+│   └── processed/      Model-ready feature matrices and rankings
 ├── results/
-│   ├── downstream_biology/   # PGC3 concordance and g:Profiler GO enrichment outputs
-│   ├── figures/              # Main publication figures (Figures 1-5)
-│   ├── figures/supplementary/# Supplementary figures (Figures S1-S4)
-│   ├── models/               # Frozen LightGBM booster model and feature importances
-│   └── tables/               # Supplementary Tables (S1-S3) & Data (S1-S2)
-├── environment.yml           # Conda environment definition
-├── requirements.txt          # Python package requirements
-├── LICENSE                   # MIT License
-└── README.md                 # Project documentation
+│   ├── model_evaluation/     Cross-validation outputs
+│   ├── downstream_biology/   PGC3 concordance and GO enrichment tables
+│   ├── figures/              Figures 2–5 and Supplementary Figures S1–S4
+│   └── tables/               Supplementary Tables and Supplementary Data
+├── requirements.txt
+├── environment.yml
+├── CITATION.cff
+└── LICENSE
 ```
-
----
 
 ## Installation
 
-### Option 1: Conda Environment (Recommended)
-
 ```bash
-# Clone the repository
 git clone https://github.com/Mansoor-Research/RegAtlas.git
 cd RegAtlas
-
-# Create and activate environment
 conda env create -f environment.yml
 conda activate regatlas
 ```
 
-### Option 2: Pip Install
+Alternatively, with Python 3.10: `pip install -r requirements.txt`.
+
+## Reproducing the analyses
+
+The processed matrices in `data/processed/` are sufficient to run steps 3–10. Steps 1, 2 and 5 require the raw inputs described in [`data/raw/README.md`](data/raw/README.md).
+
+| Step | Script | Output |
+|---|---|---|
+| 1 | `scripts/01_build_candidate_universe.py` | Dataset A candidate universe |
+| 2 | `scripts/02_extract_features.py` | Dataset A feature matrix |
+| 3 | `scripts/03_train_and_evaluate.py` | Cross-validation, baselines, ablation, permutation null |
+| 4 | `scripts/04_distance_matched_analysis.py` | Distance-matched rE2G analysis |
+| 5 | `scripts/05_build_scz_matrix.py` | Dataset B (schizophrenia) feature matrix |
+| 6 | `scripts/06_prioritize_scz_genes.py` | Frozen-model rankings for Dataset B |
+| 7 | `scripts/07_pgc3_concordance_and_go.py` | PGC3 concordance and GO enrichment (requires internet access to g:Profiler) |
+| 8 | `scripts/08_main_figures.py` | Figures 2–5 |
+| 9 | `scripts/09_supplementary_tables.py` | Supplementary Tables and Data |
+| 10 | `scripts/10_supplementary_figures.py` | Supplementary Figures S1–S4 |
+
+Run the scripts from the repository root, for example:
 
 ```bash
-# Clone repository
-git clone https://github.com/Mansoor-Research/RegAtlas.git
-cd RegAtlas
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
+python scripts/03_train_and_evaluate.py
 ```
 
----
+## Data sources
 
-## Data Access & Downloads
+| Resource | Version | Source |
+|---|---|---|
+| Open Targets Genetics gold standard | May 2023 (`otg_gs_230511.json`) | [Mountjoy *et al.* 2021](https://doi.org/10.1038/s41588-021-00945-5) |
+| GTEx cis-eQTLs (Brain Cortex, Frontal Cortex BA9) | v10 | [GTEx Portal](https://gtexportal.org/home/downloads/adult-gtex/qtl) |
+| ENCODE-rE2G enhancer–gene predictions (DLPFC, whole brain) | ENCFF280TEO, ENCFF371VKL, ENCFF307BFL | [ENCODE Portal](https://www.encodeproject.org/); [Gschwind *et al.* 2023](https://doi.org/10.1101/2023.11.09.563812) |
+| Ensembl gene annotation | GRCh38 | [Ensembl](https://www.ensembl.org/) |
+| PGC3 schizophrenia GWAS | Trubetskoy *et al.* 2022 | [PGC downloads](https://pgc.unc.edu/for-researchers/download-results/) |
+| g:Profiler | e114_eg62_p19 | [g:Profiler](https://biit.cs.ut.ee/gprofiler) |
 
-The repository includes model-ready processed feature matrices in `data/processed/` (~12 MB). If you wish to reproduce the full feature extraction from scratch, the raw source files can be acquired from public sources:
+## Citation
 
-| Dataset | Description | Source / Accession |
-| :--- | :--- | :--- |
-| **Open Targets L2G** | Gold standard causal gene labels (`otg_gs_230511.json`) | [Open Targets Genetics](https://ftp.ebi.ac.uk/pub/databases/opentargets/genetics/) |
-| **GTEx v10 Brain** | Single-tissue cis-eQTLs (Cortex & Frontal Cortex BA9) | [GTEx Portal](https://gtexportal.org/home/downloads/adult-gtex/qtl) |
-| **ENCODE-rE2G** | Predicted enhancer-to-gene regulatory links (DLPFC & Brain) | [ENCODE Portal / Gschwind et al. 2023](https://www.encodeproject.org/) |
-| **PGC3 SCZ GWAS** | Schizophrenia GWAS summary statistics (Trubetskoy 2022) | [PGC Data Portal](https://pgc.unc.edu/for-researchers/download-results/) |
-| **PGC3 SCZ Fine-Mapped Targets** | Official 120 fine-mapped genes (`Supplementary Table 12.xlsx`) | [Nature 2022 ESM Zip](https://doi.org/10.1038/s41586-022-04434-5) |
-
-*Note: All raw datasets are freely and publicly available from their official consortia repositories. Model-ready processed matrices (~12 MB) are provided directly in `data/processed/` for instant replication.*
-
----
-
-## Running the End-to-End Pipeline
-
-To execute the complete pipeline from scratch or reproduce the figures and tables from processed matrices:
-
-```bash
-# Step 1: Build the Gold Standard Universe (+/- 500 kb candidate window)
-python scripts/02_build_gold_standard_universe.py
-
-# Step 2: Extract 22 Multi-Omics Features (GTEx v10 + ENCODE-rE2G)
-python scripts/03_extract_features_and_audit_coverage.py
-
-# Step 3: Train LambdaRank Model under Chromosome-Held-Out Cross-Validation (GroupKFold)
-python scripts/04_train_and_evaluate_ranker.py
-
-# Step 4: Construct Schizophrenia Application Matrix (111 PGC3 Loci)
-python scripts/05_build_scz_application_matrix.py
-
-# Step 5: Apply Frozen RegAtlas Model to Prioritize SCZ Candidate Genes
-python scripts/06_apply_frozen_regatlas_to_scz.py
-
-# Step 6: Perform PGC3 Landmark Concordance and Synaptic Pathway Analysis
-python scripts/07_pathway_and_concordance_analysis.py
-
-# Step 7: Generate Publication-Ready Figures (300 DPI PNG + Vector PDF)
-python scripts/08_generate_publication_figures.py
-python scripts/11_generate_supplementary_figures.py
-
-# Step 8: Compile Supplementary Excel Workbooks (Tables S1-S3)
-python scripts/09_compile_supplementary_tables.py
-```
-
----
-
-## Key Results Summary
-
-### Cross-Validated Benchmark Performance (Dataset A, 1,075 Loci)
-
-| Configuration | Modalities Included | Top-1 Accuracy | Recall@5 | MRR | NDCG@5 | Statistical Significance |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Permutation Null** | Random within-locus assignment | 4.58% | N/A | 0.158 | 0.133 | Empirical null baseline |
-| **Nearest-TSS** | Linear distance heuristic | 17.30% | 49.67% | 0.332 | 0.343 | Baseline proximity |
-| **Distance Baseline** | Distance to gene body boundary | 30.51% | 55.81% | 0.431 | 0.437 | $P < 10^{-15}$ vs Nearest |
-| **GTEx eQTL Only** | Brain Cortex + BA9 cis-eQTLs | 9.95% | 39.91% | 0.245 | 0.245 | $P < 0.001$ vs Null |
-| **ENCODE-rE2G Only** | DLPFC + cortex enhancer links | 17.49% | 55.35% | 0.347 | 0.370 | Baseline single-modality |
-| **RegAtlas (Full)** | **Distance + Brain eQTL + rE2G** | **32.37%** | **64.09%** | **0.470** | **0.490** | **empirical $P \le 0.005$ (>45.6 SD vs Null)** |
-
-### Schizophrenia Validation Highlights (Dataset B, 111 Loci)
-- **PGC3 Landmark Concordance:** Prioritized official fine-mapped schizophrenia risk genes from PGC3 (Trubetskoy et al., Nature 2022) at 10 of 37 testable loci (27.0%, Fisher's exact $P = 1.43 \times 10^{-6}$, OR = 8.84 [exact 95% CI: 3.82–18.64]), compared to 4 of 37 loci for the nearest-TSS heuristic (10.8%, Fisher's exact $P = 0.061$, OR = 2.89 [exact 95% CI: 0.74–8.13]). In a paired locus-by-locus comparison, RegAtlas alone prioritized the official gene at 7 loci vs 1 for nearest-TSS (paired exact binomial test $P = 0.035$). Replicated genes include *CUL9*, *DPYD*, *ENSG00000262319*, *IMMP2L*, *KLF6*, *MAD1L1*, *OPCML*, *PCGF3*, *RERE*, and *TMTC1*.
-- **65.8% Distal Overrides:** Overrode the proximal nearest-TSS gene in 73 of 111 loci in favor of distal genes supported by convergent predicted enhancer-to-gene regulatory links and brain eQTLs.
-- **Pathway Convergence & Robustness:** Prioritized candidates nominate biologically grounded targets across synaptic signaling, ion-channel, and receptor genes (*CACNA2D2*, *FYN*, *SHANK3*, *GRIA1*, *RIMS2*). Functional over-representation analysis against the protein-coding candidate background yielded nominal enrichment for synaptic transmission and receptor binding pathways, though no terms survived genome-wide multiple testing correction after excluding training-overlap genes (minimum FDR = 0.22). This transparent result highlights the critical necessity of empirical ground truth benchmarks (such as PGC3 fine-mapped targets) over pathway over-representation heuristics.
-
+If you use RegAtlas, please cite the article above (citation details will be updated on publication). See also [`CITATION.cff`](CITATION.cff).
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Released under the [MIT License](LICENSE).

@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use RegAtlas, please cite the accompanying article."
+title: "RegAtlas: A Learning-to-Rank Multi-Omics Framework for Post-GWAS Locus-to-Gene Mapping in Psychiatric Disorders"
+type: software
+license: MIT
+repository-code: "https://github.com/Mansoor-Research/RegAtlas"
+authors:
+  - family-names: Jan
+    given-names: Syed Mansoor
+  - family-names: Wei
+    given-names: Dongqing

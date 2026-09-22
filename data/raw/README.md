@@ -1,12 +1,13 @@
-# Raw Data Directory
+# Raw input data
 
-This directory is for optional raw source downloads if you wish to re-extract features or re-run external benchmarks from scratch (`scripts/02_build_gold_standard_universe.py` and `scripts/03_extract_features_and_audit_coverage.py`).
+Raw inputs are not tracked in this repository because of their size and the terms of their original sources. Download them to the paths below to rerun steps 1, 2 and 5. Steps 3–10 run from the processed files in `data/processed/`.
 
-The model-ready processed feature matrices are already provided in `../processed/` (~12 MB), allowing you to immediately run model training and all downstream evaluations without downloading raw data.
-
-### Public Raw Sources:
-- **Open Targets Genetics L2G:** `otg_gs_230511.json` from https://ftp.ebi.ac.uk/pub/databases/opentargets/genetics/
-- **GTEx Analysis v10 Brain cis-eQTLs:** Cortex & BA9 from https://gtexportal.org/home/downloads/adult-gtex/qtl
-- **ENCODE-rE2G Predicted Enhancer Links:** DLPFC & Whole Brain from https://www.encodeproject.org/ (Gschwind et al. 2023)
-- **PGC3 SCZ GWAS Summary Stats:** Trubetskoy et al. 2022 from https://pgc.unc.edu/for-researchers/download-results/
-- **PGC3 SCZ Supplementary Table 12 (`Supplementary Table 12.xlsx`):** Required by `scripts/07_pathway_and_concordance_analysis.py` for evaluating concordance against the official 120 fine-mapped schizophrenia risk genes. Download the Supplementary Tables zip (`41586_2022_4434_MOESM11_ESM.zip`) from Nature (*Trubetskoy et al. 2022*, Nature 604, 502–508; DOI: [10.1038/s41586-022-04434-5](https://doi.org/10.1038/s41586-022-04434-5)), extract `Supplementary Table 12.xlsx`, and place it in `data/raw/pgc_scz/Supplementary Table 12.xlsx`.
+| Path | Description | Source |
+|---|---|---|
+| `data/raw/opentargets/otg_gs_230511.json` | Open Targets Genetics gold-standard loci (May 2023) | https://ftp.ebi.ac.uk/pub/databases/opentargets/genetics/ |
+| `data/raw/ensembl/Homo_sapiens.GRCh38.gtf.gz` | Ensembl GRCh38 gene annotation | https://www.ensembl.org/ |
+| `data/raw/gtex/GTEx_Analysis_v10_eQTL_updated/Brain_Cortex.v10.eQTLs.signif_pairs.parquet` | GTEx v10 significant cis-eQTL pairs, Brain Cortex | https://gtexportal.org/home/downloads/adult-gtex/qtl |
+| `data/raw/gtex/GTEx_Analysis_v10_eQTL_updated/Brain_Frontal_Cortex_BA9.v10.eQTLs.signif_pairs.parquet` | GTEx v10 significant cis-eQTL pairs, Frontal Cortex BA9 | same as above |
+| `data/raw/encode_re2g/DLPFC_ENCFF280TEO.bed.gz`, `DLPFC_ENCFF371VKL.bed.gz`, `Brain_ENCFF307BFL.bed.gz` | ENCODE-rE2G predicted enhancer–gene links | https://www.encodeproject.org/ (search by accession) |
+| `data/raw/pgc_scz/Supplementary Table 12.xlsx` | PGC3 prioritized genes (included in this repository) | Trubetskoy *et al.* 2022, *Nature* 604:502–508, Supplementary Tables (`41586_2022_4434_MOESM11_ESM.zip`) |
+| `data/current/rna_seq_eQTLs_gwas_schizophrenia.csv` | PGC3 schizophrenia GWAS summary statistics (columns `CHROM, ID, POS, A1, A2, BETA, SE, PVAL`) merged with gene-level expression columns used in step 6 | PGC3 summary statistics: https://pgc.unc.edu/for-researchers/download-results/ |
