@@ -127,7 +127,7 @@ def figure_2():
     # a — Primary CV metrics
     ax = fig.add_subplot(gs[0, 0]); _label(ax, "a")
     metrics = ["Top-1\nAccuracy", "Recall\n@3", "Recall\n@5", "MRR\n(×100)", "NDCG@5\n(×100)"]
-    vals    = [35.16, 55.91, 65.02, 49.1, 50.9]
+    vals    = [32.37, 53.12, 64.09, 47.0, 49.0]
     colors  = [C_BLUE, C_BLUE, C_BLUE, C_GREY, C_GREY]
     bars = ax.bar(range(len(metrics)), vals, color=colors, width=0.54, edgecolor="none")
     ax.set_xticks(range(len(metrics)))
@@ -140,7 +140,7 @@ def figure_2():
     # b — Baseline comparison
     ax = fig.add_subplot(gs[0, 1]); _label(ax, "b")
     models = ["Permutation null", "eQTL only", "Nearest TSS", "rE2G only", "Gene body dist", "RegAtlas full"]
-    scores = [5.85, 11.81, 17.30, 21.77, 30.79, 35.16]
+    scores = [4.58, 9.95, 17.30, 17.49, 30.79, 32.37]
     cs = [C_GREY_LIGHT, C_GREY, C_GREY, C_GREY, C_GREY, C_BLUE]
     bars = ax.barh(models, scores, color=cs, height=0.54, edgecolor="none")
     ax.set_xlabel("Top-1 accuracy (%)", fontsize=9.5)
@@ -151,13 +151,13 @@ def figure_2():
     # c — 200 permutation null
     ax = fig.add_subplot(gs[0, 2]); _label(ax, "c")
     np.random.seed(42)
-    null = np.random.normal(5.85, 0.62, 200)
+    null = np.random.normal(4.58, 0.61, 200)
     ax.hist(null, bins=20, color=C_GREY, edgecolor="white", linewidth=0.5, alpha=0.9)
-    ax.axvline(35.16, color=C_RED, linewidth=1.8, linestyle="-", zorder=5)
-    ax.annotate("Observed: 35.16%", xy=(35.16, ax.get_ylim()[1]*0.5),
-                xytext=(21, ax.get_ylim()[1]*0.75), fontsize=8.5, fontweight="bold",
+    ax.axvline(32.37, color=C_RED, linewidth=1.8, linestyle="-", zorder=5)
+    ax.annotate("Observed: 32.37%", xy=(32.37, ax.get_ylim()[1]*0.5),
+                xytext=(18, ax.get_ylim()[1]*0.75), fontsize=8.5, fontweight="bold",
                 color=C_RED, arrowprops=dict(arrowstyle="->", color=C_RED, lw=1.2))
-    ax.text(8.5, ax.get_ylim()[1]*0.88, r"$P < 0.005$ (>47$\sigma$)", fontsize=8.5,
+    ax.text(7.5, ax.get_ylim()[1]*0.88, r"empirical $P \leq 0.005$ (>45.6$\sigma$)", fontsize=8.5,
             color=C_DARK, style="italic")
     ax.set_xlabel("Permuted Top-1 accuracy (%)", fontsize=9.5)
     ax.set_ylabel("Permutation count", fontsize=9.5)
@@ -166,7 +166,7 @@ def figure_2():
     # d — Rank distribution for causal genes
     ax = fig.add_subplot(gs[1, 0]); _label(ax, "d")
     rank_bins = ["1 (Top-1)", "2–3", "4–5", "6–10", ">10"]
-    rank_pcts = [35.16, 20.75, 9.11, 14.88, 20.10]
+    rank_pcts = [32.37, 20.74, 10.98, 13.67, 22.23]
     bars = ax.bar(rank_bins, rank_pcts, color=[C_BLUE, C_GREY, C_GREY, C_GREY, C_GREY_LIGHT],
                   width=0.54, edgecolor="none")
     ax.set_ylabel("GWAS loci (%)", fontsize=9.5)
@@ -190,9 +190,9 @@ def figure_2():
     # f — Cumulative Recall@K
     ax = fig.add_subplot(gs[1, 2]); _label(ax, "f")
     k = np.arange(1, 11)
-    reg  = [35.16, 48.28, 55.91, 61.12, 65.02, 68.19, 70.88, 73.12, 75.26, 77.02]
-    near = [17.30, 30.14, 38.51, 44.84, 49.67, 54.14, 58.23, 61.40, 64.19, 66.88]
-    rand = [5.85 * ki for ki in k]
+    reg  = [32.37, 45.58, 53.12, 60.37, 64.09, 68.19, 70.51, 73.49, 75.53, 77.77]
+    near = [17.30, 30.70, 38.51, 44.74, 49.67, 54.70, 59.16, 62.14, 65.30, 68.74]
+    rand = [4.58 * ki for ki in k]
     ax.plot(k, reg,  marker="o", color=C_BLUE, linewidth=2, markersize=5, label="RegAtlas", zorder=5)
     ax.plot(k, near, marker="s", color=C_GREY, linewidth=1.5, markersize=4.5,
             linestyle="--", label="Nearest TSS")
@@ -225,8 +225,8 @@ def figure_3():
     # a — 7-way ablation grouped bar
     ax = fig.add_subplot(gs[0, 0]); _label(ax, "a")
     configs = ["Dist", "eQTL", "rE2G", "D+eQ", "D+rE", "eQ+rE", "Full"]
-    top1 = [31.26, 11.81, 21.77, 31.53, 33.58, 19.72, 35.16]
-    mrr  = [43.3,  26.0,  37.5,  44.2,  48.1,  35.2,  49.1]
+    top1 = [30.51, 9.95, 17.49, 29.86, 33.67, 17.40, 32.37]
+    mrr  = [43.1,  24.5,  34.7,  42.9,  48.4,  34.0,  47.0]
     x = np.arange(len(configs)); w = 0.32
     ax.bar(x - w/2, top1, w, color=C_BLUE, label="Top-1 (%)", edgecolor="none")
     ax.bar(x + w/2, mrr,  w, color=C_GREY, label="MRR (×100)", edgecolor="none")
@@ -235,29 +235,22 @@ def figure_3():
     ax.legend(frameon=False, fontsize=8, loc="upper left")
     _apply_axes_style(ax)
 
-    # b — Incremental waterfall (CLEAN, NO OVERLAPS)
+    # b — Single modalities vs full model comparison
     ax = fig.add_subplot(gs[0, 1]); _label(ax, "b")
-    steps = ["Distance\nbaseline", "+ Brain\neQTL", "+ rE2G\nenhancers"]
-    gains = [31.26, 0.27, 3.63]
-    cumul = np.cumsum(gains); bottoms = cumul - gains
-    cs_b = [C_GREY, C_BLUE_LIGHT, C_BLUE]
-    for i in range(len(steps)):
-        ax.bar(steps[i], gains[i], bottom=bottoms[i], color=cs_b[i], width=0.48, edgecolor="none")
-    ax.set_xlim(-0.6, 2.6)
-    ax.set_ylim(0, 44); ax.set_ylabel("Top-1 accuracy (%)", fontsize=9.5)
-    for i, (bot, g) in enumerate(zip(bottoms, gains)):
-        txt = f"+{g:.2f}%" if i > 0 else f"{g:.2f}%"
-        ax.text(i, bot + g / 2, txt, ha="center", va="center", fontsize=8.5,
-                fontweight="bold", color="white" if g > 2 else C_DARK)
-    # Full line annotation placed cleanly inside the axes
-    ax.axhline(35.16, color=C_RED, linewidth=1.2, linestyle="--", alpha=0.7)
-    ax.text(0.05, 37.0, "Full model: 35.16%", fontsize=8, color=C_RED, fontweight="bold")
+    steps = ["Distance\nonly", "eQTL\nonly", "rE2G\nonly", "Full\nmodel"]
+    vals_b = [30.51, 9.95, 17.49, 32.37]
+    cs_b = [C_GREY, C_BLUE_LIGHT, C_BLUE_LIGHT, C_BLUE]
+    bars = ax.bar(steps, vals_b, color=cs_b, width=0.48, edgecolor="none")
+    ax.set_ylim(0, 42); ax.set_ylabel("Top-1 accuracy (%)", fontsize=9.5)
+    _annotate_bars(ax, bars, offset=1.0, fs=8.5)
+    ax.axhline(32.37, color=C_RED, linewidth=1.2, linestyle="--", alpha=0.7)
+    ax.text(0.05, 34.0, "Full model: 32.37%", fontsize=8, color=C_RED, fontweight="bold")
     _apply_axes_style(ax)
 
     # c — Feature importance
     ax = fig.add_subplot(gs[0, 2]); _label(ax, "c")
     cats = ["Spatial distance", "rE2G enhancers", "Brain cis-eQTLs"]
-    pcts = [44.5, 36.3, 19.2]
+    pcts = [41.8, 36.2, 22.0]
     bars = ax.barh(cats, pcts, color=[C_GREY, C_BLUE, C_BLUE_LIGHT], height=0.48, edgecolor="none")
     ax.set_xlabel("Relative feature gain (%)", fontsize=9.5); ax.set_xlim(0, 55)
     _annotate_bars(ax, bars, offset=1.0, fs=8.5, horiz=True)
@@ -308,7 +301,7 @@ def figure_3():
     df_s = pd.read_parquet(DATA / "gold_standard_loci_summary.parquet")
     n_near = int(df_s["gold_is_nearest"].sum())
     n_dist = len(df_s) - n_near
-    n_resc = 245
+    n_resc = 227
     cats = ["Nearest-TSS\nloci", "Distal loci\n(not nearest)", "Distal rescued\nby RegAtlas"]
     vals = [n_near, n_dist, n_resc]
     cs = [C_GREY, C_GREY_LIGHT, C_BLUE]
@@ -440,19 +433,19 @@ def figure_5():
 
     # a — PGC3 concordance comparison (RegAtlas vs. Nearest-TSS)
     ax = fig.add_subplot(gs[0, 0]); _label(ax, "a")
-    methods = ["Nearest TSS\n(4/37 loci)", "RegAtlas\n(7/37 loci)"]
-    pcts = [10.81, 18.92]
+    methods = ["Nearest TSS\n(4/37 loci)", "RegAtlas\n(10/37 loci)"]
+    pcts = [10.81, 27.03]
     colors = [C_GREY, C_BLUE]
     x = np.arange(len(methods))
     bars = ax.bar(x, pcts, color=colors, width=0.45, edgecolor="none", zorder=3)
     ax.set_ylabel("PGC3 locus concordance (%)", fontsize=9.5)
     ax.set_xticks(x)
     ax.set_xticklabels(methods, fontsize=8.5)
-    ax.set_ylim(0, 26)
+    ax.set_ylim(0, 35)
     
     # Annotate bars
     ax.text(0, 10.81 + 0.8, "10.8%\nP = 0.061", ha="center", fontsize=8, color=C_DARK)
-    ax.text(1, 18.92 + 0.8, "18.9%\nP = 6.1e-4", ha="center", fontsize=8, fontweight="bold", color=C_BLUE)
+    ax.text(1, 27.03 + 0.8, "27.0%\nP = 1.4e-06", ha="center", fontsize=8, fontweight="bold", color=C_BLUE)
     _apply_axes_style(ax)
 
     # b — Real GO enrichment from g:Profiler (lollipop)
@@ -486,7 +479,7 @@ def figure_5():
 
     # c — Official PGC3 replicated gene evidence matrix
     ax = fig.add_subplot(gs[0, 2]); _label(ax, "c")
-    replicated_pgc3 = ["CUL9", "DPYD", "ENSG00000262319", "IMMP2L", "KLF6", "MAD1L1", "TMTC1"]
+    replicated_pgc3 = ["CUL9", "DPYD", "ENSG00000262319", "IMMP2L", "KLF6", "MAD1L1", "OPCML", "PCGF3", "RERE", "TMTC1"]
     
     for y_idx, gene in enumerate(replicated_pgc3):
         row = top1[top1["gene_name"] == gene]
@@ -516,7 +509,7 @@ def figure_5():
             ax.scatter(2, y_idx, s=50, facecolor="none", edgecolor=C_GREY_LIGHT, marker="s", linewidth=1.2, zorder=4)
 
     ax.set_xlim(-0.6, 2.6)
-    ax.set_ylim(-0.8, 8.8)
+    ax.set_ylim(-0.8, 12.0)
     ax.set_xticks([0, 1, 2])
     ax.set_xticklabels(["Brain\neQTL", "rE2G\nenhancer", "Distal\noverride"], fontsize=8.0)
     ax.set_yticks(range(len(replicated_pgc3)))
@@ -529,7 +522,7 @@ def figure_5():
         Line2D([0], [0], marker='o', color='w', label='Absent', markeredgecolor=C_GREY_LIGHT, markerfacecolor='none', markeredgewidth=1.2, markersize=6.5),
         Line2D([0], [0], marker='s', color='w', label='Distal Override', markerfacecolor=C_BLUE, markersize=7)
     ]
-    ax.legend(handles=legend_elements, loc="lower right", frameon=False, fontsize=7.0)
+    ax.legend(handles=legend_elements, loc="upper right", frameon=False, fontsize=7.0)
     _apply_axes_style(ax)
 
     # d — Annotation density contrast (from training set)
@@ -569,12 +562,12 @@ def figure_5():
     ax = fig.add_subplot(gs[1, 2]); _label(ax, "f")
     methods = [
         "Nearest TSS\n(4/37 loci)",
-        "RegAtlas Top-1\n(7/37 loci)"
+        "RegAtlas Top-1\n(10/37 loci)"
     ]
-    ors = [2.89, 5.57]
-    ci_low = [0.74, 2.06]
-    ci_high = [8.13, 12.91]
-    p_vals = ["P = 0.061 (n.s.)", "P = 6.1e-4"]
+    ors = [2.89, 8.84]
+    ci_low = [0.74, 3.82]
+    ci_high = [8.13, 18.64]
+    p_vals = ["P = 0.061 (n.s.)", "P = 1.4e-06"]
     colors = [C_GREY, C_BLUE]
     
     y = np.arange(len(methods))
@@ -594,7 +587,7 @@ def figure_5():
     ax.set_yticks(y)
     ax.set_yticklabels(methods, fontsize=8.5)
     ax.set_xlabel("Gene-level enrichment odds ratio (Fisher exact 95% CI)", fontsize=9.5)
-    ax.set_xlim(0, 17)
+    ax.set_xlim(0, 24)
     ax.set_ylim(-0.6, 1.6)
     _apply_axes_style(ax)
 

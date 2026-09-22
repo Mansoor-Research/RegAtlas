@@ -47,7 +47,22 @@ FEATURE_COLS = [
 
 def train_frozen_regatlas_model(df_train: pd.DataFrame) -> lgb.Booster:
     """Train the final full RegAtlas LambdaRank model on Dataset A."""
-    log.info(f"Training full RegAtlas LambdaRank model on {len(df_train):,} pairs across {df_train['locus_id'].nunique():,} loci...")
+    # Check for median best tree iteration from cross-validation
+    best_iter = 100
+    candidate_paths = [
+        PROJECT_ROOT / "results" / "model_evaluation" / "models" / "best_tree_iteration.txt",
+        PROJECT_ROOT / "results" / "models" / "best_tree_iteration.txt"
+    ]
+    for p in candidate_paths:
+        if p.exists():
+            try:
+                best_iter = int(p.read_text().strip())
+                log.info(f"Loaded median best iteration {best_iter} from {p}")
+                break
+            except Exception as e:
+                log.warning(f"Could not read {p}: {e}")
+
+    log.info(f"Training full RegAtlas LambdaRank model (num_boost_round={best_iter}) on {len(df_train):,} pairs across {df_train['locus_id'].nunique():,} loci...")
     
     # Sort by locus_id
     df_train = df_train.sort_values(by=['locus_id']).reset_index(drop=True)
@@ -73,7 +88,7 @@ def train_frozen_regatlas_model(df_train: pd.DataFrame) -> lgb.Booster:
     gbm = lgb.train(
         params,
         train_data,
-        num_boost_round=100
+        num_boost_round=best_iter
     )
     
     log.info("Frozen RegAtlas LambdaRank model successfully trained.")

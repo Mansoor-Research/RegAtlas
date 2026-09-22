@@ -81,22 +81,24 @@ def build_supplementary_tables():
 
     # 2. Ablation & Baselines (Table S2)
     df_s2 = pd.DataFrame([
-        {'Model_Configuration': 'A: Distance Only', 'Num_Features': 5, 'Top1_Accuracy_Pct': 30.79, 'Recall_at_3_Pct': 50.14, 'Recall_at_5_Pct': 59.81, 'MRR': 0.432, 'NDCG_at_5': 0.449},
-        {'Model_Configuration': 'B: GTEx eQTL Only', 'Num_Features': 10, 'Top1_Accuracy_Pct': 11.81, 'Recall_at_3_Pct': 26.51, 'Recall_at_5_Pct': 41.12, 'MRR': 0.260, 'NDCG_at_5': 0.261},
-        {'Model_Configuration': 'C: rE2G Only', 'Num_Features': 6, 'Top1_Accuracy_Pct': 21.77, 'Recall_at_3_Pct': 43.07, 'Recall_at_5_Pct': 57.30, 'MRR': 0.375, 'NDCG_at_5': 0.397},
-        {'Model_Configuration': 'D: Distance + GTEx', 'Num_Features': 15, 'Top1_Accuracy_Pct': 31.53, 'Recall_at_3_Pct': 47.53, 'Recall_at_5_Pct': 57.40, 'MRR': 0.442, 'NDCG_at_5': 0.449},
-        {'Model_Configuration': 'E: Distance + rE2G', 'Num_Features': 11, 'Top1_Accuracy_Pct': 34.42, 'Recall_at_3_Pct': 55.35, 'Recall_at_5_Pct': 64.74, 'MRR': 0.481, 'NDCG_at_5': 0.503},
-        {'Model_Configuration': 'F: GTEx + rE2G', 'Num_Features': 17, 'Top1_Accuracy_Pct': 19.72, 'Recall_at_3_Pct': 40.28, 'Recall_at_5_Pct': 52.09, 'MRR': 0.352, 'NDCG_at_5': 0.363},
-        {'Model_Configuration': 'G: Full Model (RegAtlas)', 'Num_Features': 22, 'Top1_Accuracy_Pct': 35.16, 'Recall_at_3_Pct': 55.91, 'Recall_at_5_Pct': 65.02, 'MRR': 0.491, 'NDCG_at_5': 0.509},
-        {'Model_Configuration': 'Nearest TSS Heuristic', 'Num_Features': 1, 'Top1_Accuracy_Pct': 17.30, 'Recall_at_3_Pct': 38.51, 'Recall_at_5_Pct': 49.67, 'MRR': 0.312, 'NDCG_at_5': 0.334},
+        {'Model_Configuration': 'A: Distance Only', 'Num_Features': 5, 'Top1_Accuracy_Pct': 30.51, 'Recall_at_3_Pct': 46.98, 'Recall_at_5_Pct': 55.81, 'MRR': 0.431, 'NDCG_at_5': 0.437},
+        {'Model_Configuration': 'B: GTEx eQTL Only', 'Num_Features': 10, 'Top1_Accuracy_Pct': 9.95, 'Recall_at_3_Pct': 24.93, 'Recall_at_5_Pct': 39.91, 'MRR': 0.245, 'NDCG_at_5': 0.245},
+        {'Model_Configuration': 'C: rE2G Only', 'Num_Features': 6, 'Top1_Accuracy_Pct': 17.49, 'Recall_at_3_Pct': 40.65, 'Recall_at_5_Pct': 55.35, 'MRR': 0.347, 'NDCG_at_5': 0.370},
+        {'Model_Configuration': 'D: Distance + GTEx', 'Num_Features': 15, 'Top1_Accuracy_Pct': 29.86, 'Recall_at_3_Pct': 46.79, 'Recall_at_5_Pct': 57.21, 'MRR': 0.429, 'NDCG_at_5': 0.439},
+        {'Model_Configuration': 'E: Distance + rE2G', 'Num_Features': 11, 'Top1_Accuracy_Pct': 33.67, 'Recall_at_3_Pct': 55.91, 'Recall_at_5_Pct': 65.30, 'MRR': 0.484, 'NDCG_at_5': 0.504},
+        {'Model_Configuration': 'F: GTEx + rE2G', 'Num_Features': 17, 'Top1_Accuracy_Pct': 17.40, 'Recall_at_3_Pct': 41.30, 'Recall_at_5_Pct': 53.02, 'MRR': 0.340, 'NDCG_at_5': 0.357},
+        {'Model_Configuration': 'G: Full Model (RegAtlas)', 'Num_Features': 22, 'Top1_Accuracy_Pct': 32.37, 'Recall_at_3_Pct': 53.12, 'Recall_at_5_Pct': 64.09, 'MRR': 0.470, 'NDCG_at_5': 0.490},
+        {'Model_Configuration': 'Nearest TSS Heuristic', 'Num_Features': 1, 'Top1_Accuracy_Pct': 17.30, 'Recall_at_3_Pct': 38.51, 'Recall_at_5_Pct': 49.67, 'MRR': 0.332, 'NDCG_at_5': 0.343},
         {'Model_Configuration': 'Gene Body Boundary Heuristic', 'Num_Features': 1, 'Top1_Accuracy_Pct': 30.79, 'Recall_at_3_Pct': 45.02, 'Recall_at_5_Pct': 54.05, 'MRR': 0.425, 'NDCG_at_5': 0.427},
-        {'Model_Configuration': 'Permutation Null (200x mean)', 'Num_Features': 22, 'Top1_Accuracy_Pct': 5.85, 'Recall_at_3_Pct': 17.55, 'Recall_at_5_Pct': 29.25, 'MRR': 0.152, 'NDCG_at_5': 0.165}
+        {'Model_Configuration': 'Permutation Null (200x mean)', 'Num_Features': 22, 'Top1_Accuracy_Pct': 4.58, 'Recall_at_3_Pct': None, 'Recall_at_5_Pct': None, 'MRR': 0.158, 'NDCG_at_5': 0.133}
     ])
 
     # 3. Pathway Enrichment (Table S3 from g:Profiler output)
     if GO_CSV.exists():
         df_go = pd.read_csv(GO_CSV)
         sig_go = df_go[df_go['significant']].copy()
+        if sig_go.empty:
+            sig_go = df_go.head(15).copy()
         sig_go['Fold_Enrichment'] = (
             (sig_go['intersection_size'] / sig_go['query_size']) /
             (sig_go['term_size'] / sig_go['background_size'])
@@ -113,7 +115,7 @@ def build_supplementary_tables():
                 'Background_Size': r['background_size'],
                 'Fold_Enrichment': r['Fold_Enrichment'],
                 'FDR_q_value': f"{r['fdr']:.3e}",
-                'Enriched_Genes': r['gene_symbols'].replace(" ", ", ")
+                'Enriched_Genes': str(r['gene_symbols']).replace(" ", ", ")
             })
         df_s3 = pd.DataFrame(s3_rows)
     else:

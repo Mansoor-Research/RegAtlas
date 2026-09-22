@@ -64,7 +64,7 @@ mpl.rcParams.update({
     "font.size":           9,
 })
 
-PROJECT = Path(__file__).resolve().parent.parent
+PROJECT = Path(__file__).resolve().parents[1]
 DATA    = PROJECT / "data" / "processed"
 FIG_DIR = PROJECT / "results" / "figures" / "supplementary"
 FIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -125,10 +125,8 @@ def figure_s1():
         model = lgb.LGBMRanker(
             objective="lambdarank", metric="ndcg", ndcg_eval_at=[1,3,5],
             learning_rate=0.05, num_leaves=15, min_data_in_leaf=10,
-            feature_fraction=0.8, n_estimators=300, verbose=-1)
-        model.fit(train_df[feat_cols], train_df["label"], group=train_groups,
-                  eval_set=[(test_df[feat_cols], test_df["label"])],
-                  eval_group=[test_groups], callbacks=[lgb.log_evaluation(-1)])
+            feature_fraction=0.8, n_estimators=14, verbose=-1)
+        model.fit(train_df[feat_cols], train_df["label"], group=train_groups)
 
         test_df["score"] = model.predict(test_df[feat_cols])
 

@@ -126,6 +126,7 @@ def run_chromosome_cv(df: pd.DataFrame, feature_cols: list, n_splits: int = 5, s
     
     oof_predictions = np.zeros(len(df))
     feature_importances = np.zeros(len(feature_cols))
+    best_iterations = []
     
     # Sort df by locus_id to ensure contiguous group arrays for LightGBM
     df = df.sort_values(by=['locus_id']).reset_index(drop=True)
@@ -140,15 +141,16 @@ def run_chromosome_cv(df: pd.DataFrame, feature_cols: list, n_splits: int = 5, s
         df_train = df[train_mask].copy()
         df_test = df[test_mask].copy()
         
-        # Calculate group counts (number of candidate genes per locus)
-        train_groups = df_train.groupby('locus_id', sort=False).size().values
-        test_groups = df_test.groupby('locus_id', sort=False).size().values
-        
-        X_train = df_train[feature_cols].values
-        y_train = df_train['label'].values
+        # Inner validation split for early stopping: 20% of TRAINING loci, never the test fold
+        rng = np.random.RandomState(seed + fold)
+        train_loci = df_train['locus_id'].unique()
+        val_loci = set(rng.choice(train_loci, int(0.2 * len(train_loci)), replace=False))
+        df_fit = df_train[~df_train['locus_id'].isin(val_loci)].copy()
+        df_val = df_train[df_train['locus_id'].isin(val_loci)].copy()
+        fit_groups = df_fit.groupby('locus_id', sort=False).size().values
+        val_groups = df_val.groupby('locus_id', sort=False).size().values
         
         X_test = df_test[feature_cols].values
-        y_test = df_test['label'].values
         
         # Configure LightGBM LambdaRank
         params = {
@@ -163,8 +165,8 @@ def run_chromosome_cv(df: pd.DataFrame, feature_cols: list, n_splits: int = 5, s
             'random_state': seed + fold
         }
         
-        train_data = lgb.Dataset(X_train, label=y_train, group=train_groups)
-        valid_data = lgb.Dataset(X_test, label=y_test, group=test_groups, reference=train_data)
+        train_data = lgb.Dataset(df_fit[feature_cols].values, label=df_fit['label'].values, group=fit_groups)
+        valid_data = lgb.Dataset(df_val[feature_cols].values, label=df_val['label'].values, group=val_groups, reference=train_data)
         
         gbm = lgb.train(
             params,
@@ -176,10 +178,13 @@ def run_chromosome_cv(df: pd.DataFrame, feature_cols: list, n_splits: int = 5, s
         
         oof_predictions[test_mask] = gbm.predict(X_test)
         feature_importances += gbm.feature_importance(importance_type='gain') / n_splits
+        best_iterations.append(gbm.best_iteration)
         
     df_result = df.copy()
     df_result['pred_score'] = oof_predictions
     metrics = evaluate_rankings(df_result, score_col='pred_score', ascending=False)
+    metrics['best_iterations'] = best_iterations
+    metrics['median_best_iteration'] = int(np.median(best_iterations))
     
     importance_df = pd.DataFrame({
         'feature': feature_cols,
@@ -222,31 +227,39 @@ def run_within_locus_permutation_test(df: pd.DataFrame, feature_cols: list, n_pe
             train_mask = df_perm['chrom'].isin(unique_chroms[train_chrom_idx])
             test_mask = df_perm['chrom'].isin(unique_chroms[test_chrom_idx])
             
-            df_tr = df_perm[train_mask]
-            df_te = df_perm[test_mask]
+            df_tr = df_perm[train_mask].copy()
+            df_te = df_perm[test_mask].copy()
             
-            tr_groups = df_tr.groupby('locus_id', sort=False).size().values
-            te_groups = df_te.groupby('locus_id', sort=False).size().values
-            
-            train_data = lgb.Dataset(df_tr[feature_cols].values, label=df_tr['label'].values, group=tr_groups)
-            valid_data = lgb.Dataset(df_te[feature_cols].values, label=df_te['label'].values, group=te_groups, reference=train_data)
+            # Inner validation split for early stopping: 20% of training loci
+            rng_p = np.random.RandomState(seed + perm_i + fold)
+            tr_loci = df_tr['locus_id'].unique()
+            val_loci_p = set(rng_p.choice(tr_loci, int(0.2 * len(tr_loci)), replace=False))
+            df_fit_p = df_tr[~df_tr['locus_id'].isin(val_loci_p)].copy()
+            df_val_p = df_tr[df_tr['locus_id'].isin(val_loci_p)].copy()
+            fit_groups_p = df_fit_p.groupby('locus_id', sort=False).size().values
+            val_groups_p = df_val_p.groupby('locus_id', sort=False).size().values
+
+            train_data = lgb.Dataset(df_fit_p[feature_cols].values, label=df_fit_p['label'].values, group=fit_groups_p)
+            valid_data = lgb.Dataset(df_val_p[feature_cols].values, label=df_val_p['label'].values, group=val_groups_p, reference=train_data)
             
             params = {
                 'objective': 'lambdarank',
                 'metric': 'ndcg',
+                'ndcg_eval_at': [1, 3, 5],
                 'learning_rate': 0.05,
                 'num_leaves': 15,
                 'min_data_in_leaf': 10,
+                'feature_fraction': 0.8,
                 'verbose': -1,
-                'random_state': seed + perm_i
+                'random_state': seed + perm_i + fold
             }
             
             gbm = lgb.train(
                 params,
                 train_data,
-                num_boost_round=60,
+                num_boost_round=150,
                 valid_sets=[valid_data],
-                callbacks=[lgb.early_stopping(stopping_rounds=10, verbose=False)]
+                callbacks=[lgb.early_stopping(stopping_rounds=20, verbose=False)]
             )
             
             oof_pred[test_mask] = gbm.predict(df_te[feature_cols].values)
@@ -362,13 +375,22 @@ def main():
             'MRR': f"{res['mrr']:.3f}",
             'NDCG@5': f"{res['ndcg5']:.3f}",
             '_top1_raw': res['top1'],
-            '_mrr_raw': res['mrr']
+            '_mrr_raw': res['mrr'],
+            'best_iterations': res.get('best_iterations', []),
+            'median_best_iteration': res.get('median_best_iteration', 100)
         })
         
         if name == 'G: Full Model (RegAtlas)':
             full_model_importance = imp_df
             # Save OOF predictions
             df_pred.to_parquet(DATA_PROCESSED / "regatlas_oof_predictions.parquet", index=False)
+            
+            # Save median best iteration for frozen model
+            models_dir = RESULTS_DIR / "models"
+            models_dir.mkdir(parents=True, exist_ok=True)
+            with open(models_dir / "best_tree_iteration.txt", "w") as f_tree:
+                f_tree.write(str(res.get('median_best_iteration', 100)))
+            log.info(f"Full model median best iteration across folds: {res.get('median_best_iteration', 100)} (folds: {res.get('best_iterations', [])})")
             
     df_ablation = pd.DataFrame(ablation_results)
     
@@ -398,7 +420,7 @@ def main():
         f.write(f"| **ENCODE-rE2G Only** | Single-layer max rE2G | **{b_re2g_score['top1']*100:.2f}%** | {b_re2g_score['recall3']*100:.2f}% | {b_re2g_score['recall5']*100:.2f}% | {b_re2g_score['mrr']:.3f} | {b_re2g_score['ndcg5']:.3f} |\n")
         reg_row = df_ablation[df_ablation['Model / Configuration'] == 'G: Full Model (RegAtlas)'].iloc[0]
         f.write(f"| **RegAtlas LambdaRank (Full)** | **Chromosome-held-out CV** | **{reg_row['Top-1 Accuracy (%)']}** | **{reg_row['Recall@3 (%)']}** | **{reg_row['Recall@5 (%)']}** | **{reg_row['MRR']}** | **{reg_row['NDCG@5']}** |\n")
-        f.write(f"| **Permutation Null (mean +/- 2*std)** | 200 within-locus shuffles | **{perm_res['null_top1_mean']*100:.2f}% +/- {perm_res['null_top1_std']*200:.2f}%** | — | — | **{perm_res['null_mrr_mean']:.3f}** | **{perm_res['null_ndcg5_mean']:.3f}** |\n\n")
+        f.write(f"| **Permutation Null (mean +/- std)** | 200 within-locus shuffles | **{perm_res['null_top1_mean']*100:.2f}% +/- {perm_res['null_top1_std']*100:.2f}%** | — | — | **{perm_res['null_mrr_mean']:.3f}** | **{perm_res['null_ndcg5_mean']:.3f}** |\n\n")
         
         f.write("---\n\n## 2. 7-Way Feature-Group Ablation Matrix (Chromosome-Held-Out CV)\n\n")
         f.write("| Configuration | Feature Modalities | Num Feats | Top-1 Accuracy | Recall@3 | Recall@5 | MRR | NDCG@5 |\n")
@@ -408,11 +430,13 @@ def main():
             
         f.write("\n---\n\n## 3. Within-Locus Permutation Null Distribution (200 Shuffles)\n\n")
         f.write(f"- **Empirical Permutation Null Top-1 Mean:** **{perm_res['null_top1_mean']*100:.2f}%** (95% CI: [{perm_res['null_top1_95ci'][0]*100:.2f}%, {perm_res['null_top1_95ci'][1]*100:.2f}%])\n")
+        f.write(f"- **Empirical Permutation Null Top-1 SD:** **{perm_res['null_top1_std']*100:.2f}%**\n")
         f.write(f"- **Empirical Permutation Null MRR Mean:** **{perm_res['null_mrr_mean']:.3f}**\n")
         f.write(f"- **Observed RegAtlas Top-1:** **{reg_row['Top-1 Accuracy (%)']}**\n")
         n_perms = len(perm_res['raw_top1_permutations'])
-        f.write(f"- **Permutation P-Value:** **P < {1.0/n_perms:.4f}** (0 / {n_perms} shuffles reached the observed performance)\n")
-        f.write(f"- **Statistical Separation:** **>{(float(reg_row['_top1_raw']) - perm_res['null_top1_mean']) / perm_res['null_top1_std']:.1f} standard deviations** above the empirical null distribution.\n\n")
+        f.write(f"- **Permutation P-Value:** **empirical P <= {1.0/(n_perms+1):.4f}** (0 / {n_perms} shuffles reached the observed performance)\n")
+        z_score_null = (float(reg_row['_top1_raw']) - perm_res['null_top1_mean']) / perm_res['null_top1_std']
+        f.write(f"- **Statistical Separation:** **>{z_score_null:.1f} standard deviations** above the empirical null distribution.\n\n")
         
         f.write("---\n\n## 4. Feature Gain Importances (Full Model)\n\n")
         f.write("| Rank | Feature Name | Modality | Relative Gain Importance |\n")
@@ -427,7 +451,7 @@ def main():
         f.write("> **GATES 6 & 7 STATUS: PASSED**\n")
         f.write(f"> 1. **Beats Nearest Gene Baseline:** RegAtlas achieves **{reg_row['Top-1 Accuracy (%)']}** vs **{b_nearest['top1']*100:.2f}%** nearest-gene heuristic.\n")
         f.write(f"> 2. **Multi-Omics Synergy:** Full multi-omics model outperforms all single-modality models (Distance only: {df_ablation.loc[df_ablation['Model / Configuration'] == 'A: Distance Only', 'Top-1 Accuracy (%)'].values[0]}, eQTL only: {df_ablation.loc[df_ablation['Model / Configuration'] == 'B: GTEx eQTL Only', 'Top-1 Accuracy (%)'].values[0]}, rE2G only: {df_ablation.loc[df_ablation['Model / Configuration'] == 'C: rE2G Only', 'Top-1 Accuracy (%)'].values[0]}).\n")
-        f.write(f"> 3. **Defeats Empirical Null:** RegAtlas is mathematically isolated from permutation null ({perm_res['null_top1_mean']*100:.2f}%, $P < 0.005$).\n")
+        f.write(f"> 3. **Defeats Empirical Null:** RegAtlas is mathematically isolated from permutation null ({perm_res['null_top1_mean']*100:.2f}%, empirical P <= 0.005).\n")
         f.write(f"> 4. **No Single Feature Dominates:** Gain importance is balanced across distance, enhancer links, and brain eQTL signals.\n")
 
     log.info(f"Evaluation report written to {report_path}")
@@ -440,7 +464,8 @@ def main():
     print(f"GTEx-eQTL-Only Top-1:             {df_ablation.loc[df_ablation['Model / Configuration'] == 'B: GTEx eQTL Only', 'Top-1 Accuracy (%)'].values[0]}")
     print(f"rE2G-Only Top-1:                  {df_ablation.loc[df_ablation['Model / Configuration'] == 'C: rE2G Only', 'Top-1 Accuracy (%)'].values[0]}")
     print(f"RegAtlas Full Model Top-1:        {reg_row['Top-1 Accuracy (%)']} (MRR: {reg_row['MRR']})")
-    print(f"Permutation Null Top-1 (200x):    {perm_res['null_top1_mean']*100:.2f}% +/- {perm_res['null_top1_std']*200:.2f}% (P < 0.005)")
+    print(f"Full Model Best Iterations:       {reg_row['best_iterations']} (median: {reg_row['median_best_iteration']})")
+    print(f"Permutation Null Top-1 (200x):    {perm_res['null_top1_mean']*100:.2f}% +/- {perm_res['null_top1_std']*100:.2f}% (empirical P <= 0.005, >{z_score_null:.1f} SD)")
     print(f"Report:                           {report_path}")
     print("="*80 + "\n")
 
