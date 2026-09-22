@@ -450,31 +450,46 @@ def figure_5():
 
     # b — Real GO enrichment from g:Profiler (lollipop)
     ax = fig.add_subplot(gs[0, 1]); _label(ax, "b")
-    go_terms = [
-        "Phosphoric diester hydrolase",
-        "Cell-cell signaling",
-        "Trans-synaptic signaling",
-        "Chemical synaptic trans.",
-        "Mod. of chemical synaptic trans.",
-        "GABAergic synaptic trans."
-    ]
-    # -log10(FDR)
-    # FDRs: 0.00245, 0.0116, 0.0116, 0.0116, 0.0116, 0.0372
-    fdrs = [0.00245, 0.01157, 0.01157, 0.01157, 0.01157, 0.03724]
-    counts = ["6/97", "17/97", "13/97", "13/97", "11/97", "3/97"]
+    go_csv = PROJECT / "results" / "downstream_biology" / "go_enrichment" / "regatlas_pc.csv"
+    if not go_csv.exists():
+        go_csv = PROJECT.parent / "submission" / "final_submission" / "results" / "downstream_biology" / "go_enrichment" / "regatlas_pc.csv"
+    
+    if go_csv.exists():
+        df_go = pd.read_csv(go_csv).sort_values("fdr").head(8)
+        # Invert order so lowest FDR is at top of lollipop
+        df_go = df_go.iloc[::-1].reset_index(drop=True)
+        go_terms = [t[:28] + "..." if len(t) > 31 else t for t in df_go["term_name"]]
+        fdrs = df_go["fdr"].values
+        counts = [f"{k}/{q}" for k, q in zip(df_go["intersection_size"], df_go["query_size"])]
+        q_size = df_go["query_size"].iloc[0]
+    else:
+        go_terms = [
+            "neutral L-amino acid:Na+ symport",
+            "organic acid:sodium symporter",
+            "amino acid:sodium symporter",
+            "molecular function regulator",
+            "histone ubiquitin ligase",
+            "scaffold protein binding",
+            "growth factor receptor binding",
+            "amino acid:cation symporter"
+        ][::-1]
+        fdrs = [0.2216] * len(go_terms)
+        counts = ["2/94", "2/94", "2/94", "17/94", "2/94", "4/94", "4/94", "2/94"][::-1]
+        q_size = 94
+
     neg_log_fdr = [-np.log10(f) for f in fdrs]
     
     y = np.arange(len(go_terms))
     ax.hlines(y, 0, neg_log_fdr, color=C_GREY_LIGHT, linewidth=2.5)
     ax.scatter(neg_log_fdr, y, color=C_BLUE, s=75, zorder=5, edgecolors="none")
-    ax.axvline(-np.log10(0.05), color=C_RED, linestyle="--", linewidth=1, alpha=0.7)
-    ax.text(-np.log10(0.05) + 0.05, 0.2, "FDR = 0.05", fontsize=7.5, color=C_RED)
+    ax.axvline(-np.log10(0.05), color=C_RED, linestyle="--", linewidth=1.2, alpha=0.8)
+    ax.text(-np.log10(0.05) + 0.04, 0.4, "FDR = 0.05\n(q = 0.05)", fontsize=7.5, color=C_RED)
     
-    ax.set_yticks(y); ax.set_yticklabels(go_terms, fontsize=8.0)
-    ax.set_xlabel("-log10(FDR)", fontsize=9.5)
-    ax.set_xlim(0, 3.2)
+    ax.set_yticks(y); ax.set_yticklabels(go_terms, fontsize=7.5)
+    ax.set_xlabel(f"-log10(FDR) [Query N = {q_size}]", fontsize=9.0)
+    ax.set_xlim(0, 1.8)
     for yi, (nl, cnt, fdr_val) in enumerate(zip(neg_log_fdr, counts, fdrs)):
-        ax.text(nl + 0.08, yi, f"{cnt} (q={fdr_val:.2e})", fontsize=7.2, va="center", color=C_DARK)
+        ax.text(nl + 0.04, yi, f"{cnt} (q={fdr_val:.2f})", fontsize=7.0, va="center", color=C_DARK)
     _apply_axes_style(ax)
 
     # c — Official PGC3 replicated gene evidence matrix
@@ -509,7 +524,7 @@ def figure_5():
             ax.scatter(2, y_idx, s=50, facecolor="none", edgecolor=C_GREY_LIGHT, marker="s", linewidth=1.2, zorder=4)
 
     ax.set_xlim(-0.6, 2.6)
-    ax.set_ylim(-0.8, 12.0)
+    ax.set_ylim(-0.8, 13.0)
     ax.set_xticks([0, 1, 2])
     ax.set_xticklabels(["Brain\neQTL", "rE2G\nenhancer", "Distal\noverride"], fontsize=8.0)
     ax.set_yticks(range(len(replicated_pgc3)))
@@ -522,7 +537,7 @@ def figure_5():
         Line2D([0], [0], marker='o', color='w', label='Absent', markeredgecolor=C_GREY_LIGHT, markerfacecolor='none', markeredgewidth=1.2, markersize=6.5),
         Line2D([0], [0], marker='s', color='w', label='Distal Override', markerfacecolor=C_BLUE, markersize=7)
     ]
-    ax.legend(handles=legend_elements, loc="upper right", frameon=False, fontsize=7.0)
+    ax.legend(handles=legend_elements, loc="lower right", frameon=False, fontsize=7.0)
     _apply_axes_style(ax)
 
     # d — Annotation density contrast (from training set)
