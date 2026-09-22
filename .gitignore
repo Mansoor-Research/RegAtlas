@@ -48,6 +48,8 @@ Thumbs.db
 data/raw/*
 !data/raw/.gitkeep
 !data/raw/README.md
+!data/raw/pgc_scz/
+!data/raw/pgc_scz/Supplementary Table 12.xlsx
 
 # Execution logs
 logs/

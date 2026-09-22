@@ -303,10 +303,10 @@ This table reports how many of the **1,075 gold-standard GWAS loci** and **35,35
 
 1. **High Multi-Omics Locus Coverage:**
    - **{loci_any_eqtl/total_loci*100:.1f}%** of training loci ({loci_any_eqtl:,} / {total_loci:,}) have brain eQTL signals among their candidate genes.
-   - **{loci_re2g/total_loci*100:.1f}%** of training loci ({loci_re2g:,} / {total_loci:,}) possess predicted enhancer-to-gene chromatin looping links.
+   - **{loci_re2g/total_loci*100:.1f}%** of training loci ({loci_re2g:,} / {total_loci:,}) possess predicted enhancer-to-gene regulatory links.
    - **{loci_both/total_loci*100:.1f}%** of loci ({loci_both:,} / {total_loci:,}) are supported by **both** eQTL and rE2G functional layers simultaneously.
 2. **Complementarity of Layers:**
-   - Enhancer looping (rE2G) and expression quantitative traits (eQTL) provide independent biological views: eQTL captures steady-state expression shifts, while rE2G captures physical 3D promoter-enhancer proximity.
+   - Predicted enhancer-to-gene links (rE2G) and expression quantitative traits (eQTL) provide independent biological views: eQTL captures steady-state expression shifts, while rE2G captures functional enhancer-promoter regulatory connectivity.
 
 ---
 

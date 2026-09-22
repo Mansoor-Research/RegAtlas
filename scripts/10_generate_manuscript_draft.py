@@ -57,7 +57,7 @@ To overcome proximity bias, multi-omics post-GWAS prioritization methods have in
 2. **Binary Classification vs. Ranking Formulation:** Standard classification models treat every candidate gene in a locus as an independent instance, ignoring the competitive within-locus topology where exactly one or few causal genes compete against neighboring bystanders.
 3. **Lack of Tissue-Specific Regulatory Synergy:** Many generalist tools rely on whole blood or heterogeneous cell line data rather than brain-specific regulatory layers.
 
-Here, we present **RegAtlas**, a calibrated multi-omics learning-to-rank framework that overcomes these limitations. RegAtlas models candidate gene prioritization as a within-locus ranking problem using LightGBM LambdaRank. By integrating independent cross-trait gold-standard training data from Open Targets Genetics, brain-specific GTEx v10 cis-eQTLs, and ENCODE-rE2G 3D enhancer predictions, RegAtlas provides an unbiased, generalizable engine for resolving causal genes at neuropsychiatric loci.
+Here, we present **RegAtlas**, a calibrated multi-omics learning-to-rank framework that overcomes these limitations. RegAtlas models candidate gene prioritization as a within-locus ranking problem using LightGBM LambdaRank. By integrating independent cross-trait gold-standard training data from Open Targets Genetics, brain-specific GTEx v10 cis-eQTLs, and ENCODE-rE2G predicted enhancer-to-gene regulatory links, RegAtlas provides an unbiased, generalizable engine for resolving causal genes at neuropsychiatric loci.
 
 ---
 
@@ -153,7 +153,7 @@ Connecting non-coding psychiatric GWAS signals to functional causal genes is ess
 
 Our findings yield three central insights for psychiatric genetics:
 1. **The Necessity of a Learning-to-Rank Paradigm:** Framing locus-to-gene prioritization as a within-locus ranking task allows machine learning models to capture the competitive topology of genomic loci. RegAtlas achieves 35.16% Top-1 accuracy and 65.02% Recall@5 on unseen chromosomes, providing a reliable filter that reduces wet-lab candidate search spaces by >85%.
-2. **3D Enhancer Contacts Overcome Proximity Bias:** In 69.4% of schizophrenia loci, RegAtlas prioritized non-nearest distal genes. Our distance-matched analysis provides the first quantitative proof that ENCODE-rE2G enhancer predictions provide $P < 10^{-10}$ discriminative signal independently of physical distance.
+2. **Enhancer-to-Gene Links Overcome Proximity Bias:** In 69.4% of schizophrenia loci, RegAtlas prioritized non-nearest distal genes. Our distance-matched analysis provides quantitative proof that ENCODE-rE2G enhancer predictions provide $P < 10^{-10}$ discriminative signal independently of physical distance.
 3. **Biological Convergence on Synaptic Architecture:** RegAtlas prioritized targets demonstrated statistically significant convergence on official PGC3 fine-mapped risk targets (OR = 5.57, $P = 6.13 \times 10^{-4}$) and chemical synaptic transmission ($P_{\text{FDR}} = 0.012$), supporting the biological validity of learning-to-rank multi-omics prioritization.
 
 ### Limitations & Future Directions
@@ -162,7 +162,7 @@ While RegAtlas demonstrates high precision and robustness, future releases will 
 ---
 
 ## 5. Conclusion
-RegAtlas establishes a rigorous, circularity-free post-GWAS prioritization framework that integrates 3D enhancer architecture, brain eQTLs, and spatial geometry. All processed matrices, rankings, and reproducible code are made publicly available.
+RegAtlas establishes a rigorous, circularity-free post-GWAS prioritization framework that integrates predicted enhancer-to-gene regulatory links, brain eQTLs, and spatial geometry. All processed matrices, rankings, and reproducible code are made publicly available.
 
 ---
 

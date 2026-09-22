@@ -5,7 +5,7 @@
 [![LightGBM LambdaRank](https://img.shields.io/badge/Model-LightGBM%20LambdaRank-brightgreen.svg)](https://lightgbm.readthedocs.io/)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.xxxxxx-blue.svg)](https://zenodo.org/)
 
-**RegAtlas** is a machine learning framework that reformulates post-GWAS **Locus-to-Gene (L2G)** mapping as a **Learning-to-Rank (LTR)** query problem. By integrating **spatial genomic distance**, **GTEx v10 brain cortex cis-eQTLs**, and **ENCODE-rE2G 3D enhancer-to-gene maps (2024)**, RegAtlas learns intra-locus relative separation among competing candidate genes, effectively overcoming proximity bias and linkage disequilibrium (LD) confounding.
+**RegAtlas** is a machine learning framework that reformulates post-GWAS **Locus-to-Gene (L2G)** mapping as a **Learning-to-Rank (LTR)** query problem. By integrating **spatial genomic distance**, **GTEx v10 brain cortex cis-eQTLs**, and **ENCODE-rE2G predicted enhancer-to-gene regulatory links (Gschwind et al. 2023)**, RegAtlas learns intra-locus relative separation among competing candidate genes, effectively overcoming proximity bias and linkage disequilibrium (LD) confounding.
 
 ---
 
@@ -14,7 +14,7 @@
 | Feature | Prior Post-GWAS Approaches | RegAtlas Framework |
 | :--- | :--- | :--- |
 | **Formulation** | Pointwise binary classification or heuristic distance/eQTL thresholds | **Pairwise LambdaRank (NDCG@5)** optimizing within-locus relative gene ranking |
-| **3D Epigenomics** | Linear proximity or bulk Hi-C topological domains | **ENCODE-rE2G (2024)** high-resolution brain predicted enhancer-to-promoter links |
+| **Functional Epigenomics** | Linear proximity or bulk Hi-C topological domains | **ENCODE-rE2G (Gschwind et al. 2023)** high-resolution brain predicted enhancer-to-promoter regulatory links |
 | **Validation Rigor** | Random sample-level splits (prone to LD leakage) | **Chromosome-held-out cross-validation** ($K=5$) and $200\times$ within-locus permutation null |
 | **Distal Discovery** | Often restricted to nearest-TSS gene | **69.4% non-nearest distal overrides** prioritized in schizophrenia GWAS |
 | **Consensus Concordance** | Low or unbenchmarked against expert truth sets | **Significant enrichment against official PGC3 fine-mapped genes** (7/37 loci, OR = 5.57, $P = 6.13 \times 10^{-4}$ vs. nearest-TSS 4/37 loci, OR = 2.89, $P = 0.061$) |
@@ -28,7 +28,7 @@
  │   Gold-Standard Loci      │      │    Tri-Modal Features     │      │   LightGBM LambdaRank     │
  │  1,075 Open Targets Loci  │ ───► │  • Spatial Distance (5)   │ ───► │  • Objective: LambdaRank  │
  │  35,358 Candidate Pairs   │      │  • GTEx v10 Brain eQTL(10)│      │  • GroupKFold by Chrom    │
- └───────────────────────────┘      │  • ENCODE-rE2G Links (6)  │      │  • Zero Genomic Leakage   │
+ └───────────────────────────┘      │  • ENCODE-rE2G Links (6)  │      │  • Chromosome-Held-Out    │
                                     │  • Synergy Feature (1)    │      └─────────────┬─────────────┘
                                     └───────────────────────────┘                    │
                                                                                      ▼
@@ -118,8 +118,9 @@ The repository includes model-ready processed feature matrices in `data/processe
 | :--- | :--- | :--- |
 | **Open Targets L2G** | Gold standard causal gene labels (`otg_gs_230511.json`) | [Open Targets Genetics](https://ftp.ebi.ac.uk/pub/databases/opentargets/genetics/) |
 | **GTEx v10 Brain** | Single-tissue cis-eQTLs (Cortex & Frontal Cortex BA9) | [GTEx Portal](https://gtexportal.org/home/downloads/adult-gtex/qtl) |
-| **ENCODE-rE2G** | Predicted enhancer-to-gene contact maps (DLPFC & Brain) | [ENCODE Portal / Nasser et al. 2024](https://www.encodeproject.org/) |
+| **ENCODE-rE2G** | Predicted enhancer-to-gene regulatory links (DLPFC & Brain) | [ENCODE Portal / Gschwind et al. 2023](https://www.encodeproject.org/) |
 | **PGC3 SCZ GWAS** | Schizophrenia GWAS summary statistics (Trubetskoy 2022) | [PGC Data Portal](https://pgc.unc.edu/for-researchers/download-results/) |
+| **PGC3 SCZ Fine-Mapped Targets** | Official 120 fine-mapped genes (`Supplementary Table 12.xlsx`) | [Nature 2022 ESM Zip](https://doi.org/10.1038/s41586-022-04434-5) |
 
 *Note: All raw datasets are freely and publicly available from their official consortia repositories. Model-ready processed matrices (~12 MB) are provided directly in `data/processed/` for instant replication.*
 
@@ -173,8 +174,9 @@ python scripts/09_compile_supplementary_tables.py
 
 ### Schizophrenia Validation Highlights (Dataset B, 111 Loci)
 - **PGC3 Landmark Concordance:** Prioritized official fine-mapped schizophrenia risk genes from PGC3 (Trubetskoy et al., Nature 2022) at 7 of 37 testable loci (18.9%, Fisher's exact $P = 6.13 \times 10^{-4}$, OR = 5.57 [exact 95% CI: 2.06–12.91]), compared to 4 of 37 loci for the nearest-TSS heuristic (10.8%, Fisher's exact $P = 0.061$, OR = 2.89 [exact 95% CI: 0.74–8.13]). RegAtlas's enrichment is statistically significant whereas nearest-TSS is not (McNemar paired-test $P = 0.45$). Replicated genes include *CUL9*, *DPYD*, *IMMP2L*, *KLF6*, *MAD1L1*, and *TMTC1*.
-- **69.4% Distal Overrides:** Overrode the proximal nearest-TSS gene in 77 of 111 loci in favor of distal genes supported by convergent 3D enhancer loops and brain eQTLs (including 5 of the 7 PGC3-replicated genes: *KLF6*, *TMTC1*, *DPYD*, *IMMP2L*, and *MAD1L1*).
+- **69.4% Distal Overrides:** Overrode the proximal nearest-TSS gene in 77 of 111 loci in favor of distal genes supported by convergent predicted enhancer-to-gene regulatory links and brain eQTLs (including 5 of the 7 PGC3-replicated genes: *KLF6*, *TMTC1*, *DPYD*, *IMMP2L*, and *MAD1L1*).
 - **Functional Pathway Convergence:** Significant Gene Ontology enrichment across 12 functional terms evaluated against a protein-coding candidate background via g:Profiler (FDR < 0.05), highlighting chemical synaptic transmission (FDR = 0.012, fold enrichment = 3.52×), trans-synaptic signaling (FDR = 0.012, fold enrichment = 3.52×), GABAergic synaptic transmission (FDR = 0.037, fold enrichment = 17.61×), and phosphoric diester hydrolase activity (FDR = 0.0025, fold enrichment = 10.56×).
+  - *Sensitivity Caveat:* In sensitivity analyses excluding the 11 prioritized genes that overlap with positive training labels in Dataset A, these pathway enrichments do not remain statistically significant at FDR < 0.05 (best FDR = 0.15), indicating that shared regulatory features of core training-overlap benchmark genes drive a substantial portion of this functional convergence.
 
 
 ## License
