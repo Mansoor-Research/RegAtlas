@@ -95,84 +95,62 @@ def _label(ax, letter, x=-0.14, y=1.08):
 # ═══════════════════════════════════════════════════════════════════════════════
 def figure_s1():
     log.info("Generating Figure S1 (Chromosome CV Stability)...")
-    import lightgbm as lgb
-    from sklearn.model_selection import GroupKFold
+    from sklearn.model_selection import KFold
 
-    df = pd.read_parquet(DATA / "training_matrix_dataset_a.parquet")
+    # Load evaluated out-of-fold cross-validation predictions directly
+    df = pd.read_parquet(DATA / "regatlas_oof_predictions.parquet")
 
-    feat_cols = ['tss_distance','abs_tss_distance','gene_body_distance','log10_tss_distance',
-        'log10_gene_body_distance','cortex_min_pval','cortex_neg_log10_pval','cortex_max_abs_slope',
-        'has_cortex_eqtl','ba9_min_pval','ba9_neg_log10_pval','ba9_max_abs_slope','has_ba9_eqtl',
-        'brain_eqtl_tissue_count','has_any_brain_eqtl','brain_eqtl_max_slope',
-        'brain_eqtl_max_neg_log10_pval','re2g_dlpfc_score','re2g_brain_score','re2g_max_score',
-        're2g_total_elements','re2g_is_promoter','has_re2g_link','has_both_eqtl_and_re2g']
+    # Overall & Per-chromosome stats
+    chrom_results = {}
+    total = 0; correct = 0
+    for c in df.chrom.unique():
+        c_df = df[df.chrom == c]
+        c_corr = 0; c_tot = 0
+        for lid in c_df.locus_id.unique():
+            loc = c_df[c_df.locus_id == lid].sort_values("pred_score", ascending=False)
+            if loc.iloc[0]["label"] == 1:
+                c_corr += 1
+                correct += 1
+            c_tot += 1
+            total += 1
+        chrom_results[c] = (c_corr, c_tot)
 
-    # Run 7-fold chromosome GroupKFold
-    gkf = GroupKFold(n_splits=7)
-    locus_chrom = df.groupby("locus_id")["chrom"].first()
-    groups = df["locus_id"].map(locus_chrom)
+    overall_acc = (correct / total) * 100
 
-    chrom_results = {}   # chrom -> (correct, total)
-    fold_metrics = []    # per-fold Top-1, Recall@3, Recall@5, MRR, NDCG@5, n_loci
-
-    for fold_idx, (train_idx, test_idx) in enumerate(gkf.split(df[feat_cols], df["label"], groups)):
-        train_df = df.iloc[train_idx]
-        test_df  = df.iloc[test_idx].copy()
-
-        train_groups = train_df.groupby("locus_id").size().values
-        test_groups  = test_df.groupby("locus_id").size().values
-
-        model = lgb.LGBMRanker(
-            objective="lambdarank", metric="ndcg", ndcg_eval_at=[1,3,5],
-            learning_rate=0.05, num_leaves=15, min_data_in_leaf=10,
-            feature_fraction=0.8, n_estimators=14, verbose=-1)
-        model.fit(train_df[feat_cols], train_df["label"], group=train_groups)
-
-        test_df["score"] = model.predict(test_df[feat_cols])
-
-        # Per-chromosome stats
-        for c in test_df.chrom.unique():
-            c_df = test_df[test_df.chrom == c]
-            correct = 0; total = 0
-            for lid in c_df.locus_id.unique():
-                loc = c_df[c_df.locus_id == lid]
-                top_gene = loc.sort_values("score", ascending=False).iloc[0]
-                if top_gene["label"] == 1:
-                    correct += 1
-                total += 1
-            chrom_results[c] = (correct, total)
-
-        # Per-fold aggregate metrics
-        fold_correct = 0; fold_total = 0; fold_r3 = 0; fold_r5 = 0
+    # 5 chromosome-grouped CV folds matching 04_train_and_evaluate_ranker.py
+    unique_chroms = df["chrom"].unique()
+    kf = KFold(n_splits=5, shuffle=True, random_state=42)
+    fold_metrics = []
+    for fold_idx, (tr_c_idx, te_c_idx) in enumerate(kf.split(unique_chroms)):
+        test_chroms = unique_chroms[te_c_idx]
+        te_df = df[df["chrom"].isin(test_chroms)]
+        f_tot = 0; f_corr = 0; f_r3 = 0; f_r5 = 0
         rrs = []; ndcgs = []
-        for lid in test_df.locus_id.unique():
-            loc = test_df[test_df.locus_id == lid].sort_values("score", ascending=False)
+        for lid in te_df.locus_id.unique():
+            loc = te_df[te_df.locus_id == lid].sort_values("pred_score", ascending=False)
             ranks = loc["label"].values
             gold_rank = np.where(ranks == 1)[0]
-            fold_total += 1
+            f_tot += 1
             if len(gold_rank) > 0:
-                r = gold_rank[0] + 1  # 1-indexed
-                if r == 1: fold_correct += 1
-                if r <= 3: fold_r3 += 1
-                if r <= 5: fold_r5 += 1
+                r = gold_rank[0] + 1
+                if r == 1: f_corr += 1
+                if r <= 3: f_r3 += 1
+                if r <= 5: f_r5 += 1
                 rrs.append(1.0 / r)
-                # NDCG@5
                 dcg = sum(ranks[i] / np.log2(i + 2) for i in range(min(5, len(ranks))))
-                idcg = 1.0 / np.log2(2)  # single relevant doc
+                idcg = 1.0 / np.log2(2)
                 ndcgs.append(dcg / idcg if idcg > 0 else 0)
             else:
-                rrs.append(0)
-                ndcgs.append(0)
-
+                rrs.append(0); ndcgs.append(0)
         fold_metrics.append({
             "fold": fold_idx + 1,
-            "n_loci": fold_total,
-            "top1": fold_correct / fold_total * 100,
-            "r3": fold_r3 / fold_total * 100,
-            "r5": fold_r5 / fold_total * 100,
+            "n_loci": f_tot,
+            "top1": f_corr / f_tot * 100,
+            "r3": f_r3 / f_tot * 100,
+            "r5": f_r5 / f_tot * 100,
             "mrr": np.mean(rrs) * 100,
             "ndcg5": np.mean(ndcgs) * 100,
-            "chroms": ", ".join(sorted(test_df.chrom.unique(), key=lambda x: int(x) if x.isdigit() else 99)),
+            "chroms": ", ".join(sorted(test_chroms, key=lambda x: int(x) if str(x).isdigit() else 99)),
         })
 
     fold_df = pd.DataFrame(fold_metrics)
@@ -189,8 +167,8 @@ def figure_s1():
     totals_chr = [chrom_results[c][1] for c in chrom_order]
     x_pos = np.arange(len(chrom_order))
     bars = ax.bar(x_pos, accs, color=C_BLUE, width=0.68, edgecolor="none")
-    ax.axhline(35.16, color=C_RED, linewidth=1.2, linestyle="--", alpha=0.7, zorder=3)
-    ax.text(len(chrom_order) - 1.5, 37, "Overall mean: 35.16%", fontsize=8, color=C_RED, fontweight="bold")
+    ax.axhline(overall_acc, color=C_RED, linewidth=1.2, linestyle="--", alpha=0.7, zorder=3)
+    ax.text(len(chrom_order) - 1.5, overall_acc + 2, f"Overall mean: {overall_acc:.2f}%", fontsize=8, color=C_RED, fontweight="bold")
     ax.set_xticks(x_pos)
     ax.set_xticklabels([f"chr{c}" for c in chrom_order], fontsize=7.5, rotation=45, ha="right")
     ax.set_ylabel("Top-1 accuracy (%)", fontsize=9.5)
@@ -204,7 +182,7 @@ def figure_s1():
     ax = fig.add_subplot(gs[0, 2]); _label(ax, "b")
     fold_labels = [f"Fold {int(r.fold)}\n({r.n_loci} loci)" for _, r in fold_df.iterrows()]
     bars = ax.barh(fold_labels, fold_df["top1"], color=C_BLUE, height=0.55, edgecolor="none")
-    ax.axvline(35.16, color=C_RED, linewidth=1.2, linestyle="--", alpha=0.7)
+    ax.axvline(overall_acc, color=C_RED, linewidth=1.2, linestyle="--", alpha=0.7)
     ax.set_xlabel("Top-1 accuracy (%)", fontsize=9.5)
     ax.set_xlim(0, 48)
     for bar, v in zip(bars, fold_df["top1"]):
@@ -338,32 +316,35 @@ def figure_s2():
 
     # d — High-confidence vs Medium-confidence performance
     ax = fig.add_subplot(gs[1, 0]); _label(ax, "d")
+    df_oof = pd.read_parquet(DATA / "regatlas_oof_predictions.parquet")
     cats = ["All loci\n(N=1,075)", "High confidence\n(N={})".format(
-              df_train[df_train.confidence == "High"].locus_id.nunique()),
+              df_oof[df_oof.confidence == "High"].locus_id.nunique()),
             "Medium confidence\n(N={})".format(
-              df_train[df_train.confidence == "Medium"].locus_id.nunique())]
-    # From the model evaluation: overall 35.16%, we approximate high/med split
-    gold_high = df_train[(df_train.label == 1) & (df_train.confidence == "High")]
-    gold_med  = df_train[(df_train.label == 1) & (df_train.confidence == "Medium")]
-    # Nearest-TSS accuracy by confidence
-    def nearest_acc(subset_df):
-        correct = 0; total = 0
+              df_oof[df_oof.confidence == "Medium"].locus_id.nunique())]
+
+    def calc_accs(subset_df, score_col="pred_score"):
+        corr = 0; tot = 0
         for lid in subset_df.locus_id.unique():
             loc = subset_df[subset_df.locus_id == lid]
-            nearest = loc.sort_values("abs_tss_distance").iloc[0]
-            if nearest["label"] == 1:
-                correct += 1
-            total += 1
-        return correct / total * 100 if total > 0 else 0
+            if score_col == "abs_tss_distance":
+                top_g = loc.sort_values(score_col, ascending=True).iloc[0]
+            else:
+                top_g = loc.sort_values(score_col, ascending=False).iloc[0]
+            if top_g["label"] == 1:
+                corr += 1
+            tot += 1
+        return corr / tot * 100 if tot > 0 else 0
 
-    n_all = nearest_acc(df_train)
-    n_high = nearest_acc(df_train[df_train.confidence == "High"])
-    n_med  = nearest_acc(df_train[df_train.confidence == "Medium"])
+    r_all = calc_accs(df_oof, "pred_score")
+    r_high = calc_accs(df_oof[df_oof.confidence == "High"], "pred_score")
+    r_med = calc_accs(df_oof[df_oof.confidence == "Medium"], "pred_score")
+
+    n_all = calc_accs(df_oof, "abs_tss_distance")
+    n_high = calc_accs(df_oof[df_oof.confidence == "High"], "abs_tss_distance")
+    n_med = calc_accs(df_oof[df_oof.confidence == "Medium"], "abs_tss_distance")
 
     x = np.arange(3); w = 0.32
-    # We display nearest-TSS vs RegAtlas for each confidence tier
-    # RegAtlas overall = 35.16; approximate per-confidence from data
-    regatlas_vals = [35.16, 37.5, 32.5]  # approximate split
+    regatlas_vals = [r_all, r_high, r_med]
     nearest_vals  = [n_all, n_high, n_med]
     ax.bar(x - w/2, regatlas_vals, w, color=C_BLUE, label="RegAtlas", edgecolor="none")
     ax.bar(x + w/2, nearest_vals, w, color=C_GREY, label="Nearest TSS", edgecolor="none")
