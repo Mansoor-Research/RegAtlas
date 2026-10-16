@@ -1,4 +1,4 @@
-"""One locked post-development control batch on the final-fit candidate matrix."""
+"""Train and evaluate matched reduced-feature controls on the fixed candidate matrix."""
 from __future__ import annotations
 
 import argparse
@@ -27,12 +27,10 @@ def write_json(path: Path, value: object) -> None:
 
 
 def load_scientific_inputs() -> tuple[dict, pd.DataFrame, pd.DataFrame]:
-    """Verify frozen scientific inputs; archived R2 manuscript files are not model inputs."""
+    """Verify the benchmark matrix, fixed partitions and release configuration."""
     manifest = json.loads((ROOT / "provenance/input_manifest.json").read_text())
     for record in manifest["files"]:
         relative = record["path"]
-        if relative.startswith("manuscript/"):
-            continue
         if sha(ROOT / relative) != record["sha256"]:
             raise ValueError("Scientific input changed: " + relative)
     package = json.loads((ROOT / "provenance/package_lock.json").read_text())
@@ -317,7 +315,13 @@ def evaluate(cfg: dict, base: dict, df: pd.DataFrame, controls: pd.DataFrame, ou
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--fit", action="store_true", help="Fit four locked controls over five folds each.")
+    parser.add_argument("--run-id", default=None,
+                        help="New results directory; existing directories are never overwritten.")
     args = parser.parse_args()
+    if args.run_id is not None and (
+        Path(args.run_id).name != args.run_id or args.run_id in {".", ".."}
+    ):
+        parser.error("--run-id must be a single directory name")
     self_test()
     cfg = json.loads(PROTOCOL.read_text(encoding="utf-8"))
     base, df, splits = load_scientific_inputs()
@@ -325,7 +329,7 @@ def main() -> None:
     if not args.fit:
         print(json.dumps({"preflight": "passed", "loci": df.locus_id.nunique(), "pairs": len(df), "control_fits": 20}))
         return
-    out = ROOT / "results" / cfg["run_id"]
+    out = ROOT / "results" / (args.run_id or cfg["run_id"])
     out.mkdir(exist_ok=False)
     status = {"status": "running", "started": datetime.now(timezone.utc).isoformat()}
     write_json(out / "run_status.json", status)

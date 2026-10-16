@@ -1,0 +1,26 @@
+{
+  "generating_source_commit": "f575fd09eceaa18ecab20e8eae3c93366837073e",
+  "scope": "Public packaging, documentation, verification output names, optional diagnostic removal and control output-directory selection. Scientific fitting and metric functions are unchanged.",
+  "files": {
+    "scripts/run_final_models.py": {
+      "generating_sha256": "c12a633f4e821e977210ad1d27dc3d96b17508a1348b2d2187b629f25f1069e3",
+      "release_sha256": "c621115b102dd7511fd2dec5ebd51385ed2d95e5494b6d5e8f86c167a64c5098",
+      "generating_source_url": "https://github.com/Mansoor-Research/RegAtlas/blob/f575fd09eceaa18ecab20e8eae3c93366837073e/scripts/run_final_models.py"
+    },
+    "scripts/run_internal_controls.py": {
+      "generating_sha256": "d115de49f2c582d794fed91ac40311771870a58352d10832280fd4b6b1ae4971",
+      "release_sha256": "16e593a3ec0024084f69a9d4e368a43ebd258b793243b0bae194b4d3d791eaf5",
+      "generating_source_url": "https://github.com/Mansoor-Research/RegAtlas/blob/f575fd09eceaa18ecab20e8eae3c93366837073e/scripts/run_internal_controls.py"
+    },
+    "internal_controls_design.md": {
+      "generating_sha256": "7f780e5dd05a1430862be056040c29b806b41c20ff5102cb54176807b5b38f2e",
+      "release_sha256": "574520272aef8e5a2bb1c85b466460fdf5c14f03a352fa3376ae75bfd6a33ec1",
+      "generating_source_url": "https://github.com/Mansoor-Research/RegAtlas/blob/f575fd09eceaa18ecab20e8eae3c93366837073e/internal_controls_design.md"
+    }
+  },
+  "preserved_execution_metadata": [
+    "results/final_fit_01/environment.json",
+    "results/internal_controls_01/environment.json"
+  ],
+  "scientific_function_ast_comparison": "passed"
+}

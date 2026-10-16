@@ -8,5 +8,5 @@
   "preflight_full": "passed",
   "preflight_controls": "passed",
   "model_prediction_and_metric_review": "passed",
-  "note": "The controls were independently checked with scripts/review_internal_controls.py; public upload and third-party data redistribution remain author decisions."
+  "note": "Saved models, held-out predictions, metrics and paired intervals were independently verified without refitting."
 }

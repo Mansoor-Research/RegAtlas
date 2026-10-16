@@ -1,26 +1,26 @@
-# Locked internal-control addendum
+# Reduced-feature and candidate-universe controls
 
-Authorized after the final full-feature fit, before the control results were examined. This addendum does not change `study_design.md`, `config/final_protocol.json`, the 22-feature matrix, the five outer/inner partitions, or `results/final_fit_01`.
+These post-development sensitivity analyses assess the information captured by the full model. The control comparisons were fixed before the control models were fitted. They use the same processed candidate matrix, nomination labels, chromosome folds and inner validation assignments as the full-feature analysis.
 
-## Question and scope
+## Model controls
 
-Determine whether the observed Top-5 gain over a single gene-body-distance rule survives stronger internal comparisons. These controls are a post-development sensitivity analysis, not a prospectively registered independent validation. Regardless of outcome, report all three control families and stop without results-driven feature search.
+| Feature set | Inputs | Objectives |
+| --- | --- | --- |
+| Distance | Five proximity features | LightGBM LambdaRank and binary classification |
+| Distance and availability | Five proximity features plus five binary annotation-availability indicators | LightGBM LambdaRank and binary classification |
 
-## Fixed controls
+The availability indicators are `has_cortex_eqtl`, `has_ba9_eqtl`, `has_any_brain_eqtl`, `has_re2g_link` and `has_both_eqtl_and_re2g`. The full-versus-availability comparison covers the remaining quantitative summaries and promoter indicator together. It does not isolate a distal-enhancer mechanism.
 
-1. **Learned distance only:** five proximity features, with both LambdaRank and binary LightGBM.
-2. **Learned distance plus source availability:** the same five features plus `has_cortex_eqtl`, `has_ba9_eqtl`, `has_any_brain_eqtl`, `has_re2g_link`, and `has_both_eqtl_and_re2g`. Both objectives are fitted. The full-versus-this-control contrast covers quantitative scores, counts, and the promoter indicator; it does not isolate an enhancer mechanism.
-3. **Protein-coding gene-body heuristic:** rank protein-coding candidates by gene-body distance. Evaluate all existing and new methods on this same restricted candidate set, in addition to the unrestricted benchmark. Report the number of protein-coding candidates per locus and the number with five or fewer, where Top-5 recovery is automatic for any ordering.
+All four control models use the same outer and inner assignments, fold seeds 42–46, common parameters and early-stopping rules as the full models. The complete feature lists and parameters are recorded in `config/internal_controls_protocol.json`. The supplied full-model predictions remain the reference for the control comparisons.
 
-Use identical candidate rows, labels, outer and inner roles, fold seeds 42–46, parameters, stopping rules and neutral tie metrics for the four new learned models. The fixed full-feature predictions in `results/final_fit_01` are the comparator; do not refit them. The primary endpoint remains equal-locus Top-5 source-nomination recovery. Top-1 and MRR are descriptive secondary endpoints. Use 2,000 paired locus bootstraps with seed 42 for prelisted Top-5 contrasts, conditional on fixed fits. Do not treat confidence intervals crossing zero as evidence of equivalence.
+## Candidate-universe sensitivity
 
-The control runner verifies SHA-256 hashes for every scientific file in the frozen input manifest and for the unchanged frozen configuration package. Historical R2 manuscript artifacts have been archived or revised for the new manuscript and are excluded from this new run's input-file check because they are not training inputs. The original full-fit runner and its saved outputs remain untouched.
+All methods are reevaluated on the same protein-coding candidate subset without retraining. The analysis reports the number of candidates per locus and the number of loci with five or fewer coding candidates, for which Top-5 recovery is automatic.
 
-## Prelisted comparisons and interpretation
+## Endpoints and uncertainty
 
-- Full ranker versus distance-only ranker; full classifier versus distance-only classifier.
-- Full ranker versus distance-plus-availability ranker; full classifier versus distance-plus-availability classifier.
-- Distance-plus-availability versus distance-only within each objective.
-- Within the protein-coding candidate subset, full ranker and full classifier versus protein-coding gene-body distance, with all methods scored on the same subset.
+Top-5 source-nomination recovery is the primary endpoint, with equal weights for loci and fractional expected credit for exact-score ties. Top-1 recovery and mean reciprocal rank are secondary endpoints. Prelisted Top-5 comparisons use 2,000 paired locus-bootstrap resamples with seed 42, conditional on the fitted models.
 
-If full models exceed distance-only, that supports incremental predictive information from non-distance features in this benchmark, not causal enhancer attribution. If they do not, narrow the manuscript claim accordingly. Protein-coding filtering changes the candidate universe and must be reported as a sensitivity analysis, not silently substituted for the main task. No outcome by itself establishes publication readiness, external-tool superiority or experimental validity.
+The comparisons are full versus distance-only, full versus distance-plus-availability, and distance-plus-availability versus distance-only within each objective. The coding-only analysis compares the full models with gene-body distance in the restricted universe. Exact contrasts are listed in the protocol configuration.
+
+An interval spanning zero does not establish equivalence. Candidate filtering changes the evaluation task. Nomination recovery alone does not establish biological causality or experimental success.

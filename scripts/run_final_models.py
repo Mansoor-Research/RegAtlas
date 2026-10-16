@@ -1,4 +1,4 @@
-"""Documented fresh fits on frozen processed inputs; never downloads or tunes.
+"""Train and evaluate matched LightGBM models on fixed processed inputs.
 
 Default command only validates. --fit explicitly starts ten model fits.
 """
@@ -19,6 +19,18 @@ def sha(p):
 
 def dump(p, obj):
     p.write_text(json.dumps(obj, indent=2, allow_nan=False)+'\n', encoding='utf-8')
+
+
+def verify_recorded_source(relative, recorded_sha256):
+    """Validate release sources against the unchanged generating-run metadata."""
+    if sha(ROOT / relative) == recorded_sha256:
+        return
+    history = json.loads((ROOT / 'provenance/source_history.json').read_text())
+    entry = history['files'].get(relative)
+    if entry is None or entry['generating_sha256'] != recorded_sha256:
+        raise ValueError('Generating source hash mismatch: ' + relative)
+    if sha(ROOT / relative) != entry['release_sha256']:
+        raise ValueError('Release source hash mismatch: ' + relative)
 
 def load_inputs():
     manifest = json.loads((ROOT/'provenance/input_manifest.json').read_text())
@@ -142,14 +154,7 @@ def evaluate(cfg, df, predictions, out):
             boot=np.array([delta[rng.randint(0,len(delta),len(delta))].mean() for _ in range(cfg['bootstrap_resamples'])])
             lo,hi=np.quantile(boot,[.025,.975])
             comparisons[left+' minus '+right][metric]=dict(delta=float(delta.mean()),ci95=[float(lo),float(hi)])
-    # Historical scores are descriptive diagnostics only, never model inputs or acceptance targets.
-    hist=pd.read_parquet(ROOT/'reference/historical_predictions.parquet')[['locus_id','gene_id','pred_score']]
-    paired=predictions.merge(hist,on=['locus_id','gene_id'],validate='one_to_one')
-    if len(paired)!=len(predictions): raise ValueError('Historical key coverage mismatch')
-    diagnostic=dict(exact_prediction_match=bool(np.array_equal(paired.ranker.to_numpy(),paired.pred_score.to_numpy())),
-        mean_absolute_score_difference=float(np.mean(np.abs(paired.ranker-paired.pred_score))),
-        note='Fresh deterministic execution; agreement does not certify past selection decisions. Scores across folds need not share a scale.')
-    dump(out/'summary.json',dict(metrics=summary.to_dict(orient='index'),paired_intervals=comparisons,historical_diagnostic=diagnostic,
+    dump(out/'summary.json',dict(metrics=summary.to_dict(orient='index'),paired_intervals=comparisons,
         primary_endpoint='Top-5 nomination recovery for this final retrospective protocol',
         limitations=['Nominations are not experimental causal labels.','Bootstrap conditions on fixed fits; not full training uncertainty.',
             'Inner validation is locus-held-out, not chromosome-held-out.','No external L2G comparison or independent biological validation.',

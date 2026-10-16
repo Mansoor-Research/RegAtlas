@@ -1,38 +1,43 @@
-# RegAtlas: reproducible GWAS gene-shortlisting analysis
+# RegAtlas
 
-This repository contains the code and processed inputs for the revised RegAtlas gene-shortlisting analysis. It includes the complete-pool model fits, matched reduced-feature controls, fixed chromosome folds, held-out predictions, trained models and scripts to verify the reported results. The analysis begins with a frozen processed feature matrix; it does not reconstruct every feature from raw third-party downloads.
+**Learning-to-rank for GWAS gene shortlisting with brain regulatory annotations**
 
-## What the analysis shows
+RegAtlas ranks candidate genes within GWAS loci using LightGBM LambdaRank. This repository provides the processed benchmark, fixed evaluation partitions, training and verification scripts, trained models, and numerical results for a controlled cross-trait evaluation.
 
-The cross-trait benchmark has 1,075 loci and 35,358 candidate gene–locus pairs. In the complete mixed-biotype candidate pool, RegAtlas (LightGBM LambdaRank) reaches 64.17% Top-5 source-nomination recovery versus 53.78% for gene-body distance. A same-feature LightGBM classifier reaches 64.19%. Reduced-feature models show that annotation availability accounts for much of the improvement over learned proximity, and a protein-coding-only candidate-pool sensitivity changes the comparison. The positive labels are curated source nominations, not established causal genes. Gene-level molecular summaries do not demonstrate variant-to-enhancer-to-gene mechanisms.
+## Benchmark and results
 
-## Files
+The benchmark contains **1,075 loci**, **35,358 locus–gene candidate pairs**, and **22 features**: five proximity features, ten brain cis-eQTL summaries, six ENCODE-rE2G summaries, and one joint-availability indicator. Each locus has one curated source nomination.
 
-| Location | Role |
-| --- | --- |
-| `data/processed/training_matrix_dataset_a.parquet` | Frozen 35,358-row, 41-column candidate matrix; 22 configured features enter the full models. |
-| `data/splits/locus_split_assignments.csv` | Fixed chromosome-held-out outer folds and locus-held-out inner validation roles. |
-| `config/final_protocol.json`, `config/internal_controls_protocol.json` | Features, objectives, seeds, stopping and evaluation settings. |
-| `scripts/run_final_models.py`, `scripts/run_internal_controls.py` | Validating preflight by default; opt-in fitting. |
-| `scripts/review_final_training.py`, `scripts/review_internal_controls.py` | Reload saved models and recalculate held-out results without fitting. |
-| `results/final_fit_01/`, `results/internal_controls_01/` | Saved full and control model artifacts, predictions, metrics and run records. |
-| `internal_controls_design.md` | Frozen post-development control plan and interpretation limits. |
-| `provenance/` | Input hashes, package-file hashes and release verification. |
-| `reference/historical_predictions.parquet` | Historical-score diagnostic required by the unchanged full-fit runner; never a model input or manuscript endpoint. |
+| Method | Top-5 nomination recovery |
+| --- | ---: |
+| RegAtlas, LightGBM LambdaRank | 64.17% |
+| Matched LightGBM binary classifier | 64.19% |
+| Gene-body distance | 53.78% |
+| Nearest TSS | 49.67% |
 
-Manuscript drafts, figure production scripts, screenshots, prior rejected analyses, raw third-party downloads and working notes are intentionally outside this code package.
+RegAtlas improves recovery over gene-body distance by **10.38 percentage points** (95% paired bootstrap interval, 7.70–13.23). The ranker–classifier difference is −0.02 points (−1.76 to 1.77). Differences are calculated before rounding the displayed percentages. Reduced-feature and coding-only controls assess the roles of annotation availability and candidate definition.
 
-## Environment
+## Installation
 
-The recorded execution used Python 3.12.10 on Windows and the exact library versions in `requirements.txt`. From this directory:
+The reference execution used Python 3.12.10 on Windows. Install the pinned dependencies in a virtual environment:
+
+```shell
+git clone https://github.com/Mansoor-Research/RegAtlas.git
+cd RegAtlas
+python -m venv .venv
+```
+
+Activate `.venv` using the command for your operating system, then install the dependencies:
 
 ```shell
 python -m pip install -r requirements.txt
 ```
 
-The scripts enforce pinned package versions and SHA-256 checks. Other systems may require a LightGBM native runtime and may not produce bit-identical refits.
+The scripts validate dependency versions and SHA-256 hashes. LightGBM may require a native runtime on some systems. Refits on different systems are not guaranteed to be bit-identical.
 
-## Verify the supplied results
+## Verify the supplied analysis
+
+Run these commands from the repository root:
 
 ```shell
 python scripts/run_final_models.py
@@ -41,22 +46,39 @@ python scripts/review_final_training.py
 python scripts/review_internal_controls.py
 ```
 
-The first two commands are preflight only. The two review commands reload 30 saved models across the full and reduced-feature analyses, compare saved test predictions, and recalculate summary metrics; the full-fit review also recalculates paired bootstrap intervals. It writes review files in `results/final_fit_01/`. Neither command trains a model.
+The first two commands validate inputs and configuration. The verification commands reload all 30 saved models, compare held-out predictions, and recalculate reported metrics and paired intervals. They do not train models. The full-model verification report is written to `results/verification/`, which Git ignores.
 
-## Optional refit
+## Refit models
+
+Explicit fitting creates new output directories and refuses to overwrite existing results:
 
 ```shell
-python scripts/run_final_models.py --fit --run-id reproduced_fit_01
+python scripts/run_final_models.py --fit --run-id reproduced_full
+python scripts/run_internal_controls.py --fit --run-id reproduced_controls
 ```
 
-This creates a new directory and never overwrites the supplied fit. The internal-control runner is locked to the included `internal_controls_01` run ID and refuses to overwrite it. To refit those controls, use a separate copy of this package, remove only that copy's control results, then run `python scripts/run_internal_controls.py --fit`. Do not delete or alter the supplied results in this release.
+The control refit uses the supplied full-feature predictions as its reference. Feature sets, objectives, seeds and stopping parameters are defined in `config/`.
 
-## Scope and provenance
+## Repository structure
 
-Training begins with the supplied processed feature matrix, not a raw-data reconstruction. Source annotations include Ensembl GRCh38.p14, GTEx v10 Cortex and frontal cortex BA9 significant cis-eQTL pairs, and ENCODE-rE2G brain/DLPFC files ENCFF307BFL, ENCFF280TEO and ENCFF371VKL. The curated nomination source is `otg_gs_230511.json`. Candidate genes overlap a sentinel-centered ±500-kb window. The 22 full-model features comprise five proximity, ten brain cis-eQTL, six regulatory element–gene summary and one joint-availability feature. These are gene-level summaries; they are not locus-specific colocalization or variant-overlap tests.
+```text
+config/        Model configurations and evaluation settings
+data/          Processed candidate matrix, fixed folds and data documentation
+provenance/    Input checksums, release checksums and source-history records
+results/       Trained models, held-out predictions and numerical results
+scripts/       Training, evaluation and saved-model verification
+```
 
-Top-5 source-nomination recovery is the primary endpoint of the retrospective documented evaluation. Exact-score ties receive fractional expected credit and metrics weight loci equally. The 2,000-resample paired bootstrap intervals condition on the saved fits. The internal controls are post-development sensitivity analyses. The results do not establish a ranker advantage over the matched classifier, external-tool superiority, enhancer causality or independent disease validation.
+See [data documentation](data/README.md) for the matrix schema and source accessions, and [control design](internal_controls_design.md) for the sensitivity analyses. The repository contains the analysis package required to reproduce the reported numerical results.
 
-## Data and license
+## Interpretation and reproducibility
 
-Code is released under the repository's MIT license. The processed feature matrix and historical reference scores are supplied for reproduction of this analysis; rights to underlying third-party raw datasets are not asserted. Source releases and accessions are identified in the manuscript. The repository URL is `https://github.com/Mansoor-Research/RegAtlas`.
+The labels are curated source nominations. Recovery measures agreement with those nominations, rather than experimentally established causal genes. The retrospective analysis starts from the supplied processed feature matrix; it does not rebuild every feature from raw downloads. Regulatory features are gene-level summaries, and the reduced-feature controls show that annotation availability captures much of the gain over learned proximity.
+
+Five outer folds hold out chromosomes. Inner validation holds out loci. Exact-score ties receive fractional expected credit, and metrics weight loci equally. The 2,000-resample paired bootstrap intervals condition on the fitted models. Similar observed recovery does not establish equivalence between learning objectives.
+
+Saved model files, predictions and execution metadata retain their original checksums. [Source history](provenance/source_history.json) records public-package changes against the generating code, including removal of an optional historical-score diagnostic. Training settings, features and fitted models are unchanged.
+
+## Citation and license
+
+Citation metadata is provided in [CITATION.cff](CITATION.cff). Code is distributed under the [MIT license](LICENSE). The processed data are supplied for reproduction of this analysis; underlying third-party resources retain their respective terms.

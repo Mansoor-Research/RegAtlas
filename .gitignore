@@ -4,11 +4,13 @@ __pycache__/
 venv/
 .DS_Store
 Thumbs.db
-# Keep the reviewed reference run; ignore outputs from new local refits.
+manuscript/
+figures/
+*.docx
+*.pptx
+# Preserve the reference runs and ignore newly generated outputs.
 results/*
 !results/final_fit_01/
 !results/final_fit_01/**
 !results/internal_controls_01/
 !results/internal_controls_01/**
-results/final_fit_01/coordinator_verification.json
-results/final_fit_01/coordinator_review.md

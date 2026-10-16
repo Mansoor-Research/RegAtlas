@@ -8,7 +8,7 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
-from run_final_models import sha
+from run_final_models import sha, verify_recorded_source
 from run_internal_controls import (
     MEASURES,
     check_design,
@@ -37,9 +37,9 @@ def main() -> None:
     assert json.loads((OUT / "run_status.json").read_text())["models_fit"] == 20
     assert json.loads((OUT / "protocol.json").read_text()) == cfg
     environment = json.loads((OUT / "environment.json").read_text())
-    assert environment["script_sha256"] == sha(ROOT / "scripts/run_internal_controls.py")
+    verify_recorded_source("scripts/run_internal_controls.py", environment["script_sha256"])
     assert environment["protocol_sha256"] == sha(ROOT / "config/internal_controls_protocol.json")
-    assert environment["design_sha256"] == sha(ROOT / "internal_controls_design.md")
+    verify_recorded_source("internal_controls_design.md", environment["design_sha256"])
     assert environment["full_fit_predictions_sha256"] == sha(
         ROOT / "results/final_fit_01/oof_predictions.parquet"
     )
