@@ -1,6 +1,6 @@
 cff-version: 1.2.0
-message: "If you use RegAtlas, please cite the accompanying article."
-title: "RegAtlas: A Learning-to-Rank Multi-Omics Framework for Post-GWAS Locus-to-Gene Mapping in Psychiatric Disorders"
+message: "If you use RegAtlas, please cite this repository until the related article is published."
+title: "RegAtlas: A Learning-to-Rank Framework Integrating Brain Regulatory Annotations for Post-GWAS Gene Shortlisting"
 type: software
 license: MIT
 repository-code: "https://github.com/Mansoor-Research/RegAtlas"

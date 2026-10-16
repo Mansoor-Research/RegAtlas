@@ -1,0 +1,69 @@
+{
+  "seed": 42,
+  "bootstrap_seed": 42,
+  "bootstrap_resamples": 2000,
+  "features": [
+    "abs_tss_distance",
+    "log10_tss_distance",
+    "log10_gene_body_distance",
+    "tss_distance_rank",
+    "is_nearest_tss",
+    "cortex_neg_log10_pval",
+    "cortex_max_abs_slope",
+    "has_cortex_eqtl",
+    "ba9_neg_log10_pval",
+    "ba9_max_abs_slope",
+    "has_ba9_eqtl",
+    "brain_eqtl_tissue_count",
+    "has_any_brain_eqtl",
+    "brain_eqtl_max_slope",
+    "brain_eqtl_max_neg_log10_pval",
+    "re2g_dlpfc_score",
+    "re2g_brain_score",
+    "re2g_max_score",
+    "re2g_total_elements",
+    "re2g_is_promoter",
+    "has_re2g_link",
+    "has_both_eqtl_and_re2g"
+  ],
+  "expected_loci": 1075,
+  "expected_pairs": 35358,
+  "expected_test_loci": [
+    215,
+    232,
+    190,
+    97,
+    341
+  ],
+  "models": [
+    "ranker",
+    "classifier"
+  ],
+  "num_boost_round": 150,
+  "early_stopping_rounds": 20,
+  "common_parameters": {
+    "learning_rate": 0.05,
+    "num_leaves": 15,
+    "min_data_in_leaf": 10,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 1.0,
+    "bagging_freq": 0,
+    "num_threads": 1,
+    "deterministic": true,
+    "force_col_wise": true,
+    "verbosity": -1
+  },
+  "ranker_parameters": {
+    "objective": "lambdarank",
+    "metric": "ndcg",
+    "ndcg_eval_at": [
+      1,
+      3,
+      5
+    ]
+  },
+  "classifier_parameters": {
+    "objective": "binary",
+    "metric": "binary_logloss"
+  }
+}

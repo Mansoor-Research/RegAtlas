@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "full_fit_models_reloaded": 10,
+  "internal_control_models_reloaded": 20,
+  "models_refit": 0,
+  "candidate_pairs": 35358,
+  "loci": 1075,
+  "preflight_full": "passed",
+  "preflight_controls": "passed",
+  "model_prediction_and_metric_review": "passed",
+  "note": "The controls were independently checked with scripts/review_internal_controls.py; public upload and third-party data redistribution remain author decisions."
+}

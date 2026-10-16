@@ -1,0 +1,2 @@
+# Preserve the byte-level hashes of frozen inputs, scripts and model files.
+* -text

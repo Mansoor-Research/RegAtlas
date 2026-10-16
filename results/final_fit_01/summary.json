@@ -1,0 +1,120 @@
+{
+  "metrics": {
+    "abs_tss_distance": {
+      "top1": 0.17302325581395347,
+      "top3": 0.3851162790697674,
+      "top5": 0.4967441860465116,
+      "mrr": 0.3318572808699906,
+      "ndcg5": 0.34252317459408177,
+      "expected_rank": 11.130232558139534
+    },
+    "classifier": {
+      "top1": 0.30883720930232555,
+      "top3": 0.5413953488372093,
+      "top5": 0.641860465116279,
+      "mrr": 0.46272225251016413,
+      "ndcg5": 0.48485829002223285,
+      "expected_rank": 8.235348837209303
+    },
+    "log10_gene_body_distance": {
+      "top1": 0.29114987080103355,
+      "top3": 0.4479715762273902,
+      "top5": 0.5378423772609819,
+      "mrr": 0.41606830687911744,
+      "ndcg5": 0.41967671346093893,
+      "expected_rank": 10.573953488372092
+    },
+    "ranker": {
+      "top1": 0.3176744186046512,
+      "top3": 0.5414728682170543,
+      "top5": 0.6416589147286822,
+      "mrr": 0.4676130655303043,
+      "ndcg5": 0.4903028967846124,
+      "expected_rank": 8.602790697674418
+    }
+  },
+  "paired_intervals": {
+    "ranker minus classifier": {
+      "top5": {
+        "delta": -0.00020155038759689934,
+        "ci95": [
+          -0.017643410852713176,
+          0.017706589147286816
+        ]
+      },
+      "top1": {
+        "delta": 0.008837209302325582,
+        "ci95": [
+          -0.00977906976744186,
+          0.028372093023255815
+        ]
+      },
+      "mrr": {
+        "delta": 0.004890813020140199,
+        "ci95": [
+          -0.00707429967409146,
+          0.01760444652275464
+        ]
+      }
+    },
+    "ranker minus log10_gene_body_distance": {
+      "top5": {
+        "delta": 0.10381653746770025,
+        "ci95": [
+          0.07696395348837211,
+          0.1322831395348837
+        ]
+      },
+      "top1": {
+        "delta": 0.02652454780361757,
+        "ci95": [
+          0.004457041343669252,
+          0.049124354005167944
+        ]
+      },
+      "mrr": {
+        "delta": 0.05154475865118684,
+        "ci95": [
+          0.034987167506415846,
+          0.0672048687497402
+        ]
+      }
+    },
+    "classifier minus log10_gene_body_distance": {
+      "top5": {
+        "delta": 0.10401808785529716,
+        "ci95": [
+          0.07627842377260982,
+          0.1318898578811369
+        ]
+      },
+      "top1": {
+        "delta": 0.01768733850129199,
+        "ci95": [
+          -0.0054554263565891456,
+          0.04230200258397932
+        ]
+      },
+      "mrr": {
+        "delta": 0.046653945631046634,
+        "ci95": [
+          0.02934857401357784,
+          0.06436658054298587
+        ]
+      }
+    }
+  },
+  "historical_diagnostic": {
+    "exact_prediction_match": false,
+    "mean_absolute_score_difference": 0.287649710636082,
+    "note": "Fresh deterministic execution; agreement does not certify past selection decisions. Scores across folds need not share a scale."
+  },
+  "primary_endpoint": "Top-5 nomination recovery for this final retrospective protocol",
+  "limitations": [
+    "Nominations are not experimental causal labels.",
+    "Bootstrap conditions on fixed fits; not full training uncertainty.",
+    "Inner validation is locus-held-out, not chromosome-held-out.",
+    "No external L2G comparison or independent biological validation.",
+    "Full-feature versus heuristic differences do not isolate molecular contributions."
+  ]
+}

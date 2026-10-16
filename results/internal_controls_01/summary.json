@@ -1,0 +1,220 @@
+{
+  "counts": {
+    "protein_coding_candidate_rows": 17191,
+    "other_biotype_candidate_rows": 18167,
+    "protein_coding_loci": 1075,
+    "coding_candidates_min": 1,
+    "coding_candidates_median": 11.0,
+    "coding_candidates_max": 71,
+    "loci_with_five_or_fewer_protein_coding_candidates": 238
+  },
+  "metrics_all": {
+    "abs_tss_distance": {
+      "top1": 0.17302325581395347,
+      "top3": 0.3851162790697674,
+      "top5": 0.4967441860465116,
+      "mrr": 0.3318572808699906,
+      "ndcg5": 0.34252317459408177,
+      "expected_rank": 11.130232558139534
+    },
+    "classifier": {
+      "top1": 0.30883720930232555,
+      "top3": 0.5413953488372093,
+      "top5": 0.641860465116279,
+      "mrr": 0.46272225251016413,
+      "ndcg5": 0.48485829002223285,
+      "expected_rank": 8.235348837209303
+    },
+    "distance_availability_classifier": {
+      "top1": 0.31906976744186044,
+      "top3": 0.5255813953488372,
+      "top5": 0.618139534883721,
+      "mrr": 0.46431531488859273,
+      "ndcg5": 0.47817732908022664,
+      "expected_rank": 8.132558139534884
+    },
+    "distance_availability_ranker": {
+      "top1": 0.32032299741602066,
+      "top3": 0.5273720930232557,
+      "top5": 0.6289428459137761,
+      "mrr": 0.46353571899220525,
+      "ndcg5": 0.4814668540795916,
+      "expected_rank": 8.68
+    },
+    "distance_classifier": {
+      "top1": 0.27813953488372095,
+      "top3": 0.4511627906976744,
+      "top5": 0.5390697674418604,
+      "mrr": 0.410820983755975,
+      "ndcg5": 0.4164498816605152,
+      "expected_rank": 10.597674418604651
+    },
+    "distance_ranker": {
+      "top1": 0.25272284304842446,
+      "top3": 0.4379381961707543,
+      "top5": 0.5292969931725062,
+      "mrr": 0.3909662662543543,
+      "ndcg5": 0.3981982876910731,
+      "expected_rank": 11.026046511627907
+    },
+    "log10_gene_body_distance": {
+      "top1": 0.29114987080103355,
+      "top3": 0.4479715762273902,
+      "top5": 0.5378423772609819,
+      "mrr": 0.41606830687911744,
+      "ndcg5": 0.41967671346093893,
+      "expected_rank": 10.573953488372092
+    },
+    "ranker": {
+      "top1": 0.3176744186046512,
+      "top3": 0.5414728682170543,
+      "top5": 0.6416589147286822,
+      "mrr": 0.4676130655303043,
+      "ndcg5": 0.4903028967846124,
+      "expected_rank": 8.602790697674418
+    }
+  },
+  "metrics_protein_coding": {
+    "abs_tss_distance": {
+      "top1": 0.3786046511627907,
+      "top3": 0.6288372093023256,
+      "top5": 0.72,
+      "mrr": 0.5354916487133149,
+      "ndcg5": 0.5626243281710832,
+      "expected_rank": 5.501395348837209
+    },
+    "classifier": {
+      "top1": 0.35069767441860467,
+      "top3": 0.6009302325581395,
+      "top5": 0.7069767441860465,
+      "mrr": 0.5096230538012189,
+      "ndcg5": 0.5388510578161855,
+      "expected_rank": 5.931162790697674
+    },
+    "distance_availability_classifier": {
+      "top1": 0.36511627906976746,
+      "top3": 0.5748837209302325,
+      "top5": 0.6803100775193799,
+      "mrr": 0.5105830886715448,
+      "ndcg5": 0.5306672921769715,
+      "expected_rank": 6.181860465116279
+    },
+    "distance_availability_ranker": {
+      "top1": 0.36097416020671835,
+      "top3": 0.5793713547434477,
+      "top5": 0.6833855346316844,
+      "mrr": 0.5074131399397569,
+      "ndcg5": 0.5297549463486348,
+      "expected_rank": 6.462790697674419
+    },
+    "distance_classifier": {
+      "top1": 0.38372093023255816,
+      "top3": 0.627906976744186,
+      "top5": 0.7172093023255814,
+      "mrr": 0.5362214955773484,
+      "ndcg5": 0.5624958212787852,
+      "expected_rank": 5.709302325581396
+    },
+    "distance_ranker": {
+      "top1": 0.36990550018456997,
+      "top3": 0.6023373938722776,
+      "top5": 0.7135675858195619,
+      "mrr": 0.5223172303197258,
+      "ndcg5": 0.5507524843238626,
+      "expected_rank": 5.907441860465116
+    },
+    "protein_coding_gene_body_distance": {
+      "top1": 0.402235142118863,
+      "top3": 0.6241214470284238,
+      "top5": 0.7156201550387596,
+      "mrr": 0.5478229903286796,
+      "ndcg5": 0.5702324663511604,
+      "expected_rank": 5.469767441860465
+    },
+    "ranker": {
+      "top1": 0.36,
+      "top3": 0.5840930232558139,
+      "top5": 0.6903277962347729,
+      "mrr": 0.5114380574767659,
+      "ndcg5": 0.5356668895023634,
+      "expected_rank": 6.3353488372093025
+    }
+  },
+  "paired_top5_all": [
+    {
+      "left": "ranker",
+      "right": "distance_ranker",
+      "delta": 0.112361921556176,
+      "ci95": [
+        0.08647930074181785,
+        0.13978560010440993
+      ]
+    },
+    {
+      "left": "classifier",
+      "right": "distance_classifier",
+      "delta": 0.1027906976744186,
+      "ci95": [
+        0.07674418604651163,
+        0.12930232558139534
+      ]
+    },
+    {
+      "left": "ranker",
+      "right": "distance_availability_ranker",
+      "delta": 0.012716068814906027,
+      "ci95": [
+        -0.006708133242726264,
+        0.03270764540691865
+      ]
+    },
+    {
+      "left": "classifier",
+      "right": "distance_availability_classifier",
+      "delta": 0.02372093023255814,
+      "ci95": [
+        0.0027906976744186047,
+        0.044186046511627906
+      ]
+    },
+    {
+      "left": "distance_availability_ranker",
+      "right": "distance_ranker",
+      "delta": 0.09964585274126997,
+      "ci95": [
+        0.07498423013754751,
+        0.12694600076830753
+      ]
+    },
+    {
+      "left": "distance_availability_classifier",
+      "right": "distance_classifier",
+      "delta": 0.07906976744186046,
+      "ci95": [
+        0.05347674418604651,
+        0.10418604651162791
+      ]
+    }
+  ],
+  "paired_top5_protein_coding": [
+    {
+      "left": "ranker",
+      "right": "protein_coding_gene_body_distance",
+      "delta": -0.02529235880398671,
+      "ci95": [
+        -0.04844804355850868,
+        -0.0027467607973422183
+      ]
+    },
+    {
+      "left": "classifier",
+      "right": "protein_coding_gene_body_distance",
+      "delta": -0.008643410852713179,
+      "ci95": [
+        -0.03248417312661499,
+        0.014032622739018081
+      ]
+    }
+  ],
+  "interpretation_boundary": "Post-development sensitivity controls. Full-versus-distance changes do not establish a causal enhancer mechanism. Protein-coding restriction changes the candidate universe."
+}
