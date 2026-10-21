@@ -1,5 +1,6 @@
 {
   "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26300-SP0",
   "dependencies": {
     "lightgbm": "4.7.0",
     "numpy": "2.5.1",
@@ -7,8 +8,9 @@
     "scikit-learn": "1.9.0",
     "pyarrow": "25.0.0"
   },
-  "script_sha256": "d115de49f2c582d794fed91ac40311771870a58352d10832280fd4b6b1ae4971",
+  "script_sha256": "16e593a3ec0024084f69a9d4e368a43ebd258b793243b0bae194b4d3d791eaf5",
   "protocol_sha256": "7a5093349f6adf3f6c535e49e7989095788247ee996c1692e0048ae85c11e88a",
-  "design_sha256": "7f780e5dd05a1430862be056040c29b806b41c20ff5102cb54176807b5b38f2e",
-  "full_fit_predictions_sha256": "62c54a54c92fd56ffa18ca267d8a038404b89ad21ea53b94f0c69717a606e363"
+  "generation_entry_point": "separately versioned correction wrapper using these training functions",
+  "design_sha256": "574520272aef8e5a2bb1c85b466460fdf5c14f03a352fa3376ae75bfd6a33ec1",
+  "full_fit_predictions_sha256": "3aef6129dc49514a64276a41aca1f1d7fb2c313685321e881d96f84792c516b3"
 }

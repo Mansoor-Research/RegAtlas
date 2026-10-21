@@ -25,50 +25,20 @@
       "has_both_eqtl_and_re2g"
     ]
   },
-  "model_objectives": [
-    "ranker",
-    "classifier"
-  ],
+  "model_objectives": ["ranker", "classifier"],
   "coding_biotype": "protein_coding",
   "primary_endpoint": "top5",
-  "secondary_endpoints": [
-    "top1",
-    "mrr"
-  ],
+  "secondary_endpoints": ["top1", "mrr"],
   "paired_top5_contrasts": [
-    [
-      "ranker",
-      "distance_ranker"
-    ],
-    [
-      "classifier",
-      "distance_classifier"
-    ],
-    [
-      "ranker",
-      "distance_availability_ranker"
-    ],
-    [
-      "classifier",
-      "distance_availability_classifier"
-    ],
-    [
-      "distance_availability_ranker",
-      "distance_ranker"
-    ],
-    [
-      "distance_availability_classifier",
-      "distance_classifier"
-    ]
+    ["ranker", "distance_ranker"],
+    ["classifier", "distance_classifier"],
+    ["ranker", "distance_availability_ranker"],
+    ["classifier", "distance_availability_classifier"],
+    ["distance_availability_ranker", "distance_ranker"],
+    ["distance_availability_classifier", "distance_classifier"]
   ],
   "coding_subset_top5_contrasts": [
-    [
-      "ranker",
-      "protein_coding_gene_body_distance"
-    ],
-    [
-      "classifier",
-      "protein_coding_gene_body_distance"
-    ]
+    ["ranker", "protein_coding_gene_body_distance"],
+    ["classifier", "protein_coding_gene_body_distance"]
   ]
 }

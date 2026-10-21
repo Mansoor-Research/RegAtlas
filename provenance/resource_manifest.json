@@ -1,0 +1,61 @@
+{
+  "version": "2.0.0",
+  "files": [
+    {
+      "path": "config/final_protocol.json",
+      "sha256": "aed136d5a3661f1ee4fc30c1dfa528b9e47c4d6b23eb84bda4f7155cbc8fba23"
+    },
+    {
+      "path": "data/resources/gene_annotations.parquet",
+      "sha256": "eb535ab6e1ba58d8eaa4aae4da008c6d278db0bdbeeb894670939fb8aec2ab44"
+    },
+    {
+      "path": "data/splits/locus_split_assignments.csv",
+      "sha256": "6b45d29373be8e46a3fb14ad481e4904b9d7ad4631c5464563cb34d811327175"
+    },
+    {
+      "path": "data/processed/training_matrix_dataset_a.parquet",
+      "sha256": "3ba3701b6ed6de72f00d771fc8afb1d3ea31a39516b59bbfe048d9d66276f944"
+    },
+    {
+      "path": "results/final_fit_01/models/classifier_fold_0.txt",
+      "sha256": "aaa64ade8d55b5fd44608b3cbd9a0e91667bf12124a2dac9489fcea36b9586c6"
+    },
+    {
+      "path": "results/final_fit_01/models/classifier_fold_1.txt",
+      "sha256": "54375eb98d004291db070f5abadf90620ac918b5332f63106f6912aa494e2063"
+    },
+    {
+      "path": "results/final_fit_01/models/classifier_fold_2.txt",
+      "sha256": "150397910536812a57a5c24d4b78a9ed95f25c88d2042db91048b0cf18c5fea9"
+    },
+    {
+      "path": "results/final_fit_01/models/classifier_fold_3.txt",
+      "sha256": "09685fff62b0afe5252a3492aec324d53bc932c1bef51428158d1c64782b8fa7"
+    },
+    {
+      "path": "results/final_fit_01/models/classifier_fold_4.txt",
+      "sha256": "3957a844595ccf45f7590715c7de5eb9434c408aa73505ed533f8461d715bd49"
+    },
+    {
+      "path": "results/final_fit_01/models/ranker_fold_0.txt",
+      "sha256": "bd85f8feb12ac1688b21aee2b162f12499a429604c779f2497ebe1f9e1dccc17"
+    },
+    {
+      "path": "results/final_fit_01/models/ranker_fold_1.txt",
+      "sha256": "49e2de9168c0409bafcfdf61bf831ff86e94a594040366af4c3878278298dea3"
+    },
+    {
+      "path": "results/final_fit_01/models/ranker_fold_2.txt",
+      "sha256": "c254f37559f23f4134f8ba25c1180c7b26fcdb87c232b7b3037a9e4b13c35a6c"
+    },
+    {
+      "path": "results/final_fit_01/models/ranker_fold_3.txt",
+      "sha256": "ba98e5c9bc1941563c631fb204ea169dcc23bda3ea779e433a0e56a306b2f939"
+    },
+    {
+      "path": "results/final_fit_01/models/ranker_fold_4.txt",
+      "sha256": "004129e86484591e6033143f5dbe125c90ab9f93a6e33dbc1610373be39fe134"
+    }
+  ]
+}

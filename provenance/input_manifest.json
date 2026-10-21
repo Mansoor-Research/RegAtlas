@@ -1,21 +1,23 @@
 {
+  "files": [
+    {
+      "path": "data/processed/training_matrix_dataset_a.parquet",
+      "sha256": "3ba3701b6ed6de72f00d771fc8afb1d3ea31a39516b59bbfe048d9d66276f944"
+    },
+    {
+      "path": "data/processed/ensembl_genes_grch38.parquet",
+      "sha256": "873f476a361dc6e30b341291ca96e66a26ead5d870cb6fa97934d5d8d76b91bc"
+    },
+    {
+      "path": "data/splits/locus_split_assignments.csv",
+      "sha256": "6b45d29373be8e46a3fb14ad481e4904b9d7ad4631c5464563cb34d811327175"
+    }
+  ],
   "environment": {
     "lightgbm": "4.7.0",
     "numpy": "2.5.1",
     "pandas": "3.0.5",
     "scikit-learn": "1.9.0",
     "pyarrow": "25.0.0"
-  },
-  "files": [
-    {
-      "path": "data/processed/training_matrix_dataset_a.parquet",
-      "sha256": "59ca999efa13556c4bfb7d0afb175710f2dfae3edb0ffc1974fd30c4d3c1cb9d",
-      "role": "frozen benchmark input"
-    },
-    {
-      "path": "data/splits/locus_split_assignments.csv",
-      "sha256": "6b45d29373be8e46a3fb14ad481e4904b9d7ad4631c5464563cb34d811327175",
-      "role": "frozen matched partitions"
-    }
-  ]
+  }
 }

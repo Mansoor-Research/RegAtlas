@@ -1,6 +1,5 @@
 {
   "status": "completed_needs_review",
-  "started": "2026-10-13T12:04:16.139026+00:00",
   "models_fit": 10,
-  "finished": "2026-10-13T12:04:21.904536+00:00"
+  "version": "2.0.0"
 }

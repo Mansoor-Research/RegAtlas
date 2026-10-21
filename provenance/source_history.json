@@ -22,5 +22,13 @@
     "results/final_fit_01/environment.json",
     "results/internal_controls_01/environment.json"
   ],
-  "scientific_function_ast_comparison": "passed"
+  "scientific_function_ast_comparison": "passed",
+  "previous_release_metadata": true,
+  "version_2": {
+    "base_commit": "f368eb48600d3a313ca99a400d06a4bb2730df87",
+    "correction": "ENCFF280TEO target-gene header harmonization",
+    "configuration_and_split_changes": false,
+    "models_refitted": 30,
+    "inference": "New-locus candidate preparation and frozen chromosome-excluded prediction"
+  }
 }

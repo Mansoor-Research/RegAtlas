@@ -1,0 +1,63 @@
+{
+  "version": "2.0.0",
+  "correction": "ENCFF280TEO TargetGeneEnsembl_ID column; include all three regulatory sources",
+  "unchanged": [
+    "gene_id",
+    "gene_name",
+    "chrom",
+    "start",
+    "end",
+    "strand",
+    "tss",
+    "gene_biotype",
+    "sentinel_pos",
+    "locus_id",
+    "study_id",
+    "confidence",
+    "label_set",
+    "tss_distance",
+    "abs_tss_distance",
+    "gene_body_distance",
+    "label",
+    "tss_distance_rank",
+    "is_nearest_tss",
+    "gene_id_clean",
+    "log10_tss_distance",
+    "log10_gene_body_distance",
+    "cortex_min_pval",
+    "cortex_neg_log10_pval",
+    "cortex_max_abs_slope",
+    "has_cortex_eqtl",
+    "ba9_min_pval",
+    "ba9_neg_log10_pval",
+    "ba9_max_abs_slope",
+    "has_ba9_eqtl",
+    "brain_eqtl_tissue_count",
+    "has_any_brain_eqtl",
+    "brain_eqtl_max_slope",
+    "brain_eqtl_max_neg_log10_pval",
+    "re2g_brain_score"
+  ],
+  "changed_features": [
+    "re2g_dlpfc_score",
+    "re2g_total_elements",
+    "re2g_is_promoter",
+    "re2g_max_score",
+    "has_re2g_link",
+    "has_both_eqtl_and_re2g"
+  ],
+  "parameters_and_partitions_unchanged": true,
+  "models_fitted": 30,
+  "corrected_source_sha256": "81d9d24f5b6671759cfb597c644d8650b062623534d71f5b0b80a250f5ba75b7",
+  "original_benchmark_matrix_sha256": "59ca999efa13556c4bfb7d0afb175710f2dfae3edb0ffc1974fd30c4d3c1cb9d",
+  "generating_sources": [
+    {
+      "name": "run_final_models.py",
+      "sha256": "c621115b102dd7511fd2dec5ebd51385ed2d95e5494b6d5e8f86c167a64c5098"
+    },
+    {
+      "name": "run_internal_controls.py",
+      "sha256": "16e593a3ec0024084f69a9d4e368a43ebd258b793243b0bae194b4d3d791eaf5"
+    }
+  ]
+}

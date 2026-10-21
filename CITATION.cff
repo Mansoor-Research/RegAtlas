@@ -2,6 +2,8 @@ cff-version: 1.2.0
 message: "If you use RegAtlas, please cite this repository until the related article is published."
 title: "RegAtlas: A Learning-to-Rank Framework Integrating Brain Regulatory Annotations for Post-GWAS Gene Shortlisting"
 type: software
+version: 2.0.0
+date-released: 2026-10-21
 license: MIT
 repository-code: "https://github.com/Mansoor-Research/RegAtlas"
 authors:

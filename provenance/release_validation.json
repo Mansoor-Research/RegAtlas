@@ -1,12 +1,16 @@
 {
+  "version": "2.0.0",
+  "date": "2026-10-21",
   "status": "passed",
-  "full_fit_models_reloaded": 10,
-  "internal_control_models_reloaded": 20,
-  "models_refit": 0,
+  "models_refitted_with_fixed_settings": 30,
+  "full_fit_models_independently_reloaded": 10,
+  "control_models_independently_reloaded": 20,
   "candidate_pairs": 35358,
   "loci": 1075,
-  "preflight_full": "passed",
-  "preflight_controls": "passed",
-  "model_prediction_and_metric_review": "passed",
-  "note": "Saved models, held-out predictions, metrics and paired intervals were independently verified without refitting."
+  "feature_schema_and_partitions": "passed",
+  "paired_metrics_and_bootstrap_intervals": "independently_recalculated",
+  "generic_inference_benchmark_features": "exact match across all 35358 pairs",
+  "generic_inference_benchmark_predictions": "exact match for ranker and classifier across all 35358 pairs",
+  "synthetic_input_test": "3 loci, 63 candidates",
+  "schizophrenia_application": "287 loci, 6439 candidates; no disease-specific refitting"
 }

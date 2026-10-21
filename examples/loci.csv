@@ -1,0 +1,4 @@
+locus_id,chrom,sentinel_pos
+example_1,1,10000000
+example_2,7,20000000
+example_3,16,10000000
