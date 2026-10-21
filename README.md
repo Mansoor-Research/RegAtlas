@@ -55,7 +55,7 @@ Each chromosome is scored using the saved model that held that chromosome out of
 
 ## Benchmark and disease application
 
-The cross-trait benchmark contains 1,075 loci, 35,358 candidate pairs and 22 predictors. Version 2.0.0 harmonizes the target-gene column name in all three ENCODE-rE2G sources. It retains the original candidates, labels, folds, features, hyperparameters and seeds, and refits the full models and reduced-feature controls. Earlier results remain in Git history; do not mix model/resource versions.
+The cross-trait benchmark contains 1,075 loci, 35,358 candidate pairs and 22 predictors. Version 2.0.0 supplies a matched set of molecular resources, full and reduced-feature models, fixed partitions and evaluation results. Use the models and resources from the same release; source-processing provenance is recorded in `provenance/correction_record.json`.
 
 | Method | Top-5 nomination recovery |
 |---|---:|
